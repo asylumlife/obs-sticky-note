@@ -81,8 +81,8 @@ Midnight, and Asylum Life.
 ![The eight built-in themes](docs/screenshots/themes.png)
 
 A theme is **data, not code** — a set of tokens covering colour, paper texture,
-silhouette, how the corner folds, the font, the checkbox, and how a finished
-task reads. There is no per-theme CSS anywhere in the project, so a theme you
+silhouette, how the corner folds, accent brackets and edge rules, the font, the
+checkbox, and how a finished task reads. There is no per-theme CSS anywhere in the project, so a theme you
 make can do anything a built-in one can. Asylum Life is the proof: it throws
 out the sticky-note shape entirely for a semi-transparent HUD panel with corner
 brackets, no tilt, no fold, and a condensed uppercase title — and it is still
@@ -98,7 +98,13 @@ preview the note against a transparent, dark, bright, or busy background,
 because a note that reads beautifully on grey can vanish over actual video.
 
 **Basics** shows the dozen or so things most people want. **Everything** opens
-all 67 tokens.
+all 74 tokens.
+
+Under **Shape** you'll find **Accents**: a small diagram of the note where you
+click any of the four corners or four edges to toggle a mark there. Corners get
+L-shaped brackets, edges get a rule down that side, and the two carry separate
+colours and weights — so you can have brackets in one colour with a heavier
+rule down the left in another. This works on any theme, not just Asylum Life.
 
 When you're happy, click **Copy code**. Then in OBS, open the dock's **Theme**
 panel, paste, and click **Add theme**. It joins your swatches with a corner

@@ -161,6 +161,74 @@
   .auto input { width: 13px; height: 13px; }
   .field.is-auto input[type="color"] { opacity: .35; pointer-events: none; }
 
+  /* ---------- Frame accent picker ----------
+     A diagram of the note with its eight accent positions. Clicking a corner
+     or an edge toggles it, and the marks are drawn in the colours the theme
+     will actually use, so the control reads as a preview rather than a form.
+     Corner and edge marks are tinted separately because they are separately
+     coloured tokens. */
+  .field.wide { align-items: flex-start; }
+  .field.wide > label { padding-top: 24px; }
+
+  .framepick {
+    --fp-corner: #DC3E30;
+    --fp-edge: #DC3E30;
+    --fp-off: #464c55;
+    position: relative;
+    width: 116px; height: 84px;
+    flex: none;
+    border: 1px dashed #363b43;
+    border-radius: 3px;
+    background: #16191d;
+  }
+  .framepick .fp {
+    position: absolute;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  .framepick .fp::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 0 solid var(--fp-off);
+    transition: border-color .12s;
+  }
+  .framepick .fp:hover::before { border-color: #8b939d; }
+
+  /* Every rule below stays scoped to .framepick. The base `.framepick .fp`
+     rule above zeroes the border, and an unscoped `.fp-tl::before` loses to it
+     on specificity — which renders the whole picker as an empty box. */
+
+  /* corners: an L of two arms, mirrored into each corner */
+  .framepick .fp-tl, .framepick .fp-tr,
+  .framepick .fp-bl, .framepick .fp-br { width: 30px; height: 24px; }
+  .framepick .fp-tl { left: 5px;  top: 5px; }
+  .framepick .fp-tr { right: 5px; top: 5px; }
+  .framepick .fp-bl { left: 5px;  bottom: 5px; }
+  .framepick .fp-br { right: 5px; bottom: 5px; }
+  .framepick .fp-tl::before { border-top-width: 3px; border-left-width: 3px; }
+  .framepick .fp-tr::before { border-top-width: 3px; border-right-width: 3px; }
+  .framepick .fp-bl::before { border-bottom-width: 3px; border-left-width: 3px; }
+  .framepick .fp-br::before { border-bottom-width: 3px; border-right-width: 3px; }
+  .framepick .fp-tl.on::before, .framepick .fp-tr.on::before,
+  .framepick .fp-bl.on::before, .framepick .fp-br.on::before { border-color: var(--fp-corner); }
+
+  /* edges: a single rule along the middle of each side */
+  .framepick .fp-t, .framepick .fp-b { left: 39px; right: 39px; height: 13px; }
+  .framepick .fp-l, .framepick .fp-r { top: 32px; bottom: 32px; width: 13px; }
+  .framepick .fp-t { top: 3px; }
+  .framepick .fp-b { bottom: 3px; }
+  .framepick .fp-l { left: 3px; }
+  .framepick .fp-r { right: 3px; }
+  .framepick .fp-t::before { border-top-width: 3px; }
+  .framepick .fp-b::before { border-bottom-width: 3px; }
+  .framepick .fp-l::before { border-left-width: 3px; }
+  .framepick .fp-r::before { border-right-width: 3px; }
+  .framepick .fp-t.on::before, .framepick .fp-b.on::before,
+  .framepick .fp-l.on::before, .framepick .fp-r.on::before { border-color: var(--fp-edge); }
+
   /* ---------- Stage ---------- */
   .stage { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .stage-bar {

@@ -28,6 +28,28 @@ Live preview against transparent, dark, bright, or busy backgrounds; a
 export as a share code or `.json`. Its entire UI is generated from the token
 metadata, so it cannot fall out of step with the schema.
 
+### Corner and edge accents, on every theme
+
+The `frame` setting used to be one choice of three fixed arrangements:
+brackets at all four corners, a rule down the left, or a full inset border.
+Those are not three features — they are three selections of the same one, so
+picking which corners and which edges carry an accent is now the setting
+itself.
+
+- `frameCorners` takes any of `tl tr bl br`, `frameEdges` any of `t r b l`.
+  All three old arrangements are ordinary selections of these, which is what
+  made replacing them the right call rather than adding a fourth.
+- Corners and edges carry their own colour, opacity and weight, plus a shared
+  inset, so red brackets over an amber side rule is a theme rather than a
+  fork.
+- The builder draws this as a clickable diagram of the note: click a corner or
+  an edge to toggle it, shown in the colours it will actually use.
+- Available to every theme, not just Asylum Life — Kraft with a rule down the
+  side, Midnight with two brackets.
+
+Themes and share codes written against the old `frame` setting still load; the
+value is translated to the equivalent selection.
+
 ### New corner and paper options
 
 Corner folds: `fold`, `dogear`, `curl`, `torn`, or none, in any of the four

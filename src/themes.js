@@ -65,7 +65,7 @@ var BUILTINS = [
     width: 340, padX: 16, padY: 12, padBottom: 13, radius: 0, tilt: 0,
     borderWidth: 1, borderColor: '#3F92C4', borderAlpha: 0.18,
     shadow: 'none',
-    frame: 'brackets', frameColor: '#DC3E30',
+    frameCorners: 'tl tr bl br', frameColor: '#DC3E30',
 
     corner: 'none',
     texture: 'scanlines', textureColor: '#3F92C4', textureAlpha: 0.055,

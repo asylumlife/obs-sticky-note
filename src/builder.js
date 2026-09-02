@@ -43,6 +43,7 @@
   var showDone = true;
   var showStamp = false;
   var inputs = {};   /* token -> refresh function, for redrawing after a load */
+  var widgetPaints = [];  /* widgets that show live colour, refreshed every change */
 
   var SAMPLE = [
     ['Set up the scene', true],
@@ -93,6 +94,11 @@
   function update() {
     refreshPreview();
     refreshCode();
+    /* Widgets draw themselves in the colours they represent, so they have to
+       follow a colour change made elsewhere in the panel. Only widgets are
+       repainted here — repainting ordinary inputs would fight with a slider
+       mid-drag or a half-typed field. */
+    widgetPaints.forEach(function (paint) { paint(); });
     try { localStorage.setItem(KEY, JSON.stringify(theme)); } catch (e) { /* private mode */ }
   }
 
@@ -108,6 +114,80 @@
 
   /* ---------- Controls, generated from the token metadata ---------- */
 
+  /* ------------------------------------------------------------------
+   * Custom widgets
+   *
+   * Most controls are inferred from a token's default. A few tokens are
+   * better shown than listed — picking which corners carry an accent is a
+   * spatial question, and eight checkboxes make you hold the picture in your
+   * head. A widget registered here takes over rendering for its token, and
+   * may drive more than one (the frame picker owns both the corner and the
+   * edge set, so `skip` keeps the second from also drawing itself).
+   * ---------------------------------------------------------------- */
+
+  var WIDGETS = {
+    frameCorners: { skip: ['frameEdges'], build: framePicker }
+  };
+
+  var SLOTS = [
+    { slot: 'tl', token: 'frameCorners', title: 'Top-left bracket' },
+    { slot: 't',  token: 'frameEdges',   title: 'Top edge rule' },
+    { slot: 'tr', token: 'frameCorners', title: 'Top-right bracket' },
+    { slot: 'l',  token: 'frameEdges',   title: 'Left edge rule' },
+    { slot: 'r',  token: 'frameEdges',   title: 'Right edge rule' },
+    { slot: 'bl', token: 'frameCorners', title: 'Bottom-left bracket' },
+    { slot: 'b',  token: 'frameEdges',   title: 'Bottom edge rule' },
+    { slot: 'br', token: 'frameCorners', title: 'Bottom-right bracket' }
+  ];
+
+  function hasMember(token, slot) {
+    return (theme[token] || '').split(' ').indexOf(slot) !== -1;
+  }
+
+  function toggleMember(token, slot) {
+    var cur = (theme[token] || '').split(' ').filter(Boolean);
+    var at = cur.indexOf(slot);
+    if (at === -1) cur.push(slot); else cur.splice(at, 1);
+    /* normalize() puts it back into canonical order */
+    theme[token] = cur.join(' ');
+  }
+
+  function framePicker(row, ctl) {
+    row.classList.add('wide');
+    var pick = document.createElement('div');
+    pick.className = 'framepick';
+
+    SLOTS.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'fp fp-' + s.slot;
+      b.title = s.title;
+      b.setAttribute('aria-label', s.title);
+      b.addEventListener('click', function () {
+        toggleMember(s.token, s.slot);
+        theme = normalize(theme);
+        paint();
+        clearPreset();
+        update();
+      });
+      pick.appendChild(b);
+    });
+    ctl.appendChild(pick);
+
+    function paint() {
+      Array.prototype.forEach.call(pick.children, function (b, i) {
+        var s = SLOTS[i];
+        b.classList.toggle('on', hasMember(s.token, s.slot));
+      });
+      /* show the picker in the colours it is actually drawing */
+      var c = resolve(normalize(theme));
+      pick.style.setProperty('--fp-corner', c.frame);
+      pick.style.setProperty('--fp-edge', c.frameEdge);
+    }
+    paint();
+    return paint;
+  }
+
   function field(key, label) {
     var row = document.createElement('div');
     row.className = 'field';
@@ -120,6 +200,13 @@
 
     var def = DEFAULTS[key];
     var set = function (v) { theme[key] = v; clearPreset(); update(); };
+
+    if (WIDGETS[key]) {
+      var paint = WIDGETS[key].build(row, ctl);
+      inputs[key] = paint;
+      widgetPaints.push(paint);
+      return row;
+    }
 
     if (ENUM_VALUES[key]) {
       var sel = document.createElement('select');
@@ -222,11 +309,17 @@
 
   function buildControls() {
     inputs = {};
+    widgetPaints = [];
     el.controls.textContent = '';
 
     FIELD_GROUPS.forEach(function (group, i) {
+      /* a widget that owns several tokens renders once, not once per token */
+      var owned = {};
+      Object.keys(WIDGETS).forEach(function (k) {
+        (WIDGETS[k].skip || []).forEach(function (s) { owned[s] = 1; });
+      });
       var fields = group.fields.filter(function (f) {
-        return showAll || BASIC_FIELDS[f[0]];
+        return !owned[f[0]] && (showAll || BASIC_FIELDS[f[0]]);
       });
       if (!fields.length) return;
 

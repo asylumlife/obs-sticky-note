@@ -52,9 +52,16 @@ browser, design what you want, and copy the code it gives you.
 | `borderWidth` | `0` | 0 to 8 |  |
 | `borderColor` | `"#000000"` | hex colour |  |
 | `borderAlpha` | `0.18` | 0 to 1 |  |
-| `frame` | `"none"` | none \| brackets \| rule-left \| inset |  |
-| `frameColor` | `"#DC3E30"` | hex colour |  |
+| `frameCorners` | _none_ | any of: tl tr bl br | yes |
+| `frameEdges` | _none_ | any of: t r b l | yes |
+| `frameColor` | `"#DC3E30"` | hex colour | yes |
 | `frameAlpha` | `1` | 0 to 1 |  |
+| `frameWidth` | `2` | bracket arm thickness |  |
+| `frameLength` | `18` | bracket arm length |  |
+| `frameEdgeColor` | _derived_ | '' → the corner colour |  |
+| `frameEdgeAlpha` | `1` | 0 to 1 |  |
+| `frameEdgeWidth` | `3` | edge rule thickness |  |
+| `frameInset` | `0` | how far in from the paper edge |  |
 
 ### Corner
 
@@ -113,6 +120,19 @@ browser, design what you want, and copy the code it gives you.
 | `stampTrack` | `1` | -2 to 12 |  |
 | `stampRadius` | `8` | 0 to 40 |  |
 | `celebrate` | `true` | true \| false |  |
+
+## Accents
+
+`frameCorners` and `frameEdges` are sets: list the corners or edges you
+want, space separated, in any order (`"tl br"`, `"t b"`). Empty means no
+accent. Corners are drawn as L-shaped brackets sized by `frameLength` and
+`frameWidth`; edges are rules down the full side sized by `frameEdgeWidth`.
+The two carry separate colours, so brackets and side rules need not match.
+
+This replaced an older `frame` token that offered three fixed arrangements.
+Each of those is a selection here — `brackets` was all four corners,
+`rule-left` a single left edge, `inset` all four edges pulled in — and old
+themes and share codes still load, translated on the way in.
 
 ## Derived colours
 

@@ -49,9 +49,20 @@ var DEFAULTS = {
   borderColor: '#000000',
   borderAlpha: 0.18,
   shadow: 'soft',        /* none | soft | hard | lift */
-  frame: 'none',         /* none | brackets | rule-left | inset */
+
+  /* Corner brackets and edge rules are two selections of the same idea, so
+     they are sets rather than an enum of the handful of combinations someone
+     thought of first. Empty means no accent at all. */
+  frameCorners: '',      /* any of: tl tr bl br */
+  frameEdges: '',        /* any of: t r b l */
+  frameWidth: 2,         /* bracket arm thickness */
+  frameLength: 18,       /* bracket arm length */
+  frameEdgeWidth: 3,     /* edge rule thickness */
+  frameInset: 0,         /* how far in from the paper edge */
   frameColor: '#DC3E30',
   frameAlpha: 1,
+  frameEdgeColor: '',    /* '' → the corner colour */
+  frameEdgeAlpha: 1,
 
   /* folded corner */
   corner: 'fold',        /* none | fold | dogear | curl | torn */
@@ -113,14 +124,13 @@ var DEFAULTS = {
 /* Enumerated tokens become data-* attributes; anything not listed here is
    either a scalar/colour written as a custom property, or metadata. */
 var ENUMS = {
-  texture: 'texture', frame: 'frame', corner: 'corner', cornerAt: 'corner-at',
+  texture: 'texture', corner: 'corner', cornerAt: 'corner-at',
   pin: 'pin', font: 'font', titleFont: 'title-font', titleCase: 'title-case',
   check: 'check', doneFade: 'done-fade', shadow: 'shadow'
 };
 
 var ENUM_VALUES = {
   texture: ['none', 'ruled', 'grid', 'dots', 'scanlines', 'grain'],
-  frame: ['none', 'brackets', 'rule-left', 'inset'],
   corner: ['none', 'fold', 'dogear', 'curl', 'torn'],
   cornerAt: ['tl', 'tr', 'bl', 'br'],
   pin: ['none', 'tape', 'pushpin'],
@@ -133,12 +143,21 @@ var ENUM_VALUES = {
 };
 
 /* Numeric tokens and the range the builder (and a pasted theme) must respect. */
+/* Tokens holding a set of flags. Order in the list is canonical, so two themes
+   that pick the same corners encode to the same string and compare equal. */
+var SET_VALUES = {
+  frameCorners: ['tl', 'tr', 'bl', 'br'],
+  frameEdges: ['t', 'r', 'b', 'l']
+};
+
 var RANGES = {
   paperAngle: [0, 360], paperAlpha: [0, 1], textureAlpha: [0, 1], textureGap: [2, 80],
   inkSoftAlpha: [0, 1], width: [180, 900], radius: [0, 40], tilt: [-15, 15],
   padX: [0, 80], padY: [0, 80], padLeft: [0, 120], padBottom: [0, 80],
   borderWidth: [0, 8],
-  borderAlpha: [0, 1], frameAlpha: [0, 1], cornerSize: [0, 90], pinAlpha: [0, 1],
+  borderAlpha: [0, 1], frameAlpha: [0, 1], frameEdgeAlpha: [0, 1],
+  frameWidth: [1, 12], frameLength: [4, 200], frameEdgeWidth: [1, 12],
+  frameInset: [-20, 40], cornerSize: [0, 90], pinAlpha: [0, 1],
   titleSize: [8, 90], titleWeight: [100, 900], titleTrack: [-2, 10],
   taskSize: [8, 70], taskLine: [8, 90], textShadow: [0, 1], glow: [0, 1],
   progressSize: [8, 48], progressWeight: [100, 900], checkSize: [8, 44],
@@ -185,12 +204,47 @@ function clamp(v, lo, hi) {
   return Math.min(hi, Math.max(lo, v));
 }
 
+/* Keep only recognised members, drop duplicates, and emit them in the
+   canonical order so the same selection always serialises identically. */
+function normalizeSet(value, allowed) {
+  var seen = {};
+  String(value == null ? '' : value).split(/[\s,]+/).forEach(function (k) {
+    k = k.toLowerCase();
+    if (allowed.indexOf(k) !== -1) seen[k] = 1;
+  });
+  return allowed.filter(function (k) { return seen[k]; }).join(' ');
+}
+
+/* `frame` used to be one enum picking a fixed arrangement. Themes and share
+   codes written against it still load: each old value is just a selection the
+   new tokens can express, which is why replacing it was the right move. */
+var RETIRED_KEYS = { frame: 1 };
+
+var LEGACY_FRAME = {
+  'brackets':  { frameCorners: 'tl tr bl br' },
+  'rule-left': { frameEdges: 'l', frameEdgeWidth: 3 },
+  'inset':     { frameEdges: 't r b l', frameEdgeWidth: 1, frameInset: 5 },
+  'none':      {}
+};
+
+function migrate(src) {
+  if (!src || typeof src !== 'object' || typeof src.frame !== 'string') return src;
+  var add = LEGACY_FRAME[src.frame];
+  if (!add) return src;
+  var out = {};
+  Object.keys(src).forEach(function (k) { out[k] = src[k]; });
+  Object.keys(add).forEach(function (k) {
+    if (out[k] === undefined) out[k] = add[k];
+  });
+  return out;
+}
+
 /* Fill in every missing field and drop anything malformed, so downstream code
    never has to guard. A pasted theme is untrusted input: it comes off someone
    else's clipboard and only the shapes below are honoured. */
 function normalize(theme) {
   var out = {};
-  var src = (theme && typeof theme === 'object') ? theme : {};
+  var src = migrate((theme && typeof theme === 'object') ? theme : {});
 
   Object.keys(DEFAULTS).forEach(function (k) {
     var def = DEFAULTS[k];
@@ -198,7 +252,9 @@ function normalize(theme) {
 
     if (val === undefined || val === null) { out[k] = def; return; }
 
-    if (ENUM_VALUES[k]) {
+    if (SET_VALUES[k]) {
+      out[k] = normalizeSet(val, SET_VALUES[k]);
+    } else if (ENUM_VALUES[k]) {
       out[k] = ENUM_VALUES[k].indexOf(val) !== -1 ? val : def;
     } else if (typeof def === 'boolean') {
       out[k] = !!val;
@@ -239,6 +295,7 @@ function resolve(t) {
     doneColor: rgba(t.ink, t.doneDim),
     border: rgba(t.borderColor, t.borderAlpha),
     frame: rgba(t.frameColor, t.frameAlpha),
+    frameEdge: rgba(t.frameEdgeColor || t.frameColor, t.frameEdgeAlpha),
     pin: rgba(t.pinColor, t.pinAlpha),
     texA: rgba(t.textureColor, t.textureAlpha),
     texB: rgba(t.textureColor2, t.textureAlpha)
@@ -260,6 +317,38 @@ function glowOf(strength, colour, shadowStrength) {
   return base === 'none' ? halo : halo + ', ' + base;
 }
 
+/* Where each accent anchors. A corner contributes two layers (one arm each
+   way); an edge contributes one running the full side. */
+var CORNER_AT = { tl: '0 0', tr: '100% 0', bl: '0 100%', br: '100% 100%' };
+var EDGE_AT   = { t: '0 0', r: '100% 0', b: '0 100%', l: '0 0' };
+
+/* The old version hardcoded eight layers in CSS, which is why it could only
+   ever draw four corners. Generating the lists means any selection works and
+   the three background lists stay aligned by construction. */
+function frameLayers(t, c) {
+  var img = [], size = [], pos = [];
+  var cg = 'linear-gradient(' + c.frame + ',' + c.frame + ')';
+  var eg = 'linear-gradient(' + c.frameEdge + ',' + c.frameEdge + ')';
+
+  (t.frameCorners ? t.frameCorners.split(' ') : []).forEach(function (k) {
+    if (!CORNER_AT[k]) return;
+    img.push(cg); size.push(t.frameLength + 'px ' + t.frameWidth + 'px'); pos.push(CORNER_AT[k]);
+    img.push(cg); size.push(t.frameWidth + 'px ' + t.frameLength + 'px'); pos.push(CORNER_AT[k]);
+  });
+
+  (t.frameEdges ? t.frameEdges.split(' ') : []).forEach(function (k) {
+    if (!EDGE_AT[k]) return;
+    img.push(eg);
+    size.push(k === 't' || k === 'b'
+      ? '100% ' + t.frameEdgeWidth + 'px'
+      : t.frameEdgeWidth + 'px 100%');
+    pos.push(EDGE_AT[k]);
+  });
+
+  if (!img.length) return { img: 'none', size: 'auto', pos: '0 0' };
+  return { img: img.join(','), size: size.join(','), pos: pos.join(',') };
+}
+
 var SHADOWS = {
   none: 'none',
   soft: '0 8px 18px rgba(0,0,0,.28), 0 2px 4px rgba(0,0,0,.18)',
@@ -272,6 +361,7 @@ var SHADOWS = {
 function applyTheme(note, theme) {
   var t = normalize(theme);
   var c = resolve(t);
+  var frame = frameLayers(t, c);
 
   Object.keys(ENUMS).forEach(function (k) {
     note.setAttribute('data-' + ENUMS[k], t[k]);
@@ -302,6 +392,10 @@ function applyTheme(note, theme) {
     '--shadow': SHADOWS[t.shadow],
 
     '--frame-c': c.frame,
+    '--frame-img': frame.img,
+    '--frame-size': frame.size,
+    '--frame-pos': frame.pos,
+    '--frame-inset': t.frameInset + 'px',
     '--corner-size': t.cornerSize + 'px',
     '--pin-c': c.pin,
 
@@ -399,9 +493,11 @@ function decodeTheme(text) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
 
   /* A parsed object of entirely unknown keys is someone's clipboard, not a
-     theme; normalize() would happily turn it into the default yellow note. */
+     theme; normalize() would happily turn it into the default yellow note.
+     Retired keys count as known, so a code written against an older token set
+     is still recognisably a theme — migrate() handles it from there. */
   var known = Object.keys(data).filter(function (k) {
-    return Object.prototype.hasOwnProperty.call(DEFAULTS, k);
+    return Object.prototype.hasOwnProperty.call(DEFAULTS, k) || RETIRED_KEYS[k];
   });
   if (!known.length) return null;
 
@@ -426,7 +522,8 @@ function decodeTheme(text) {
 
 var COLOR_KEYS = {
   paper: 1, paper2: 1, curl: 1, ink: 1, accent: 1,
-  textureColor: 1, textureColor2: 1, borderColor: 1, frameColor: 1, pinColor: 1,
+  textureColor: 1, textureColor2: 1, borderColor: 1, pinColor: 1,
+  frameColor: 1, frameEdgeColor: 1,
   titleColor: 1, progressColor: 1, checkColor: 1, checkFillDone: 1, checkTick: 1
 };
 
@@ -449,7 +546,11 @@ var FIELD_GROUPS = [
     ['padBottom', 'Padding bottom'], ['padLeft', 'Padding left'],
     ['borderWidth', 'Border'], ['borderColor', 'Border colour'],
     ['borderAlpha', 'Border opacity'],
-    ['frame', 'Frame'], ['frameColor', 'Frame colour'], ['frameAlpha', 'Frame opacity']
+    ['frameCorners', 'Accents'], ['frameEdges', 'Accent edges'],
+    ['frameColor', 'Corner colour'], ['frameAlpha', 'Corner opacity'],
+    ['frameWidth', 'Corner weight'], ['frameLength', 'Corner length'],
+    ['frameEdgeColor', 'Edge colour'], ['frameEdgeAlpha', 'Edge opacity'],
+    ['frameEdgeWidth', 'Edge weight'], ['frameInset', 'Accent inset']
   ]},
   { title: 'Corner', fields: [
     ['corner', 'Fold style'], ['cornerAt', 'Which corner'],
@@ -484,7 +585,8 @@ var FIELD_GROUPS = [
 var BASIC_FIELDS = {
   paper: 1, ink: 1, accent: 1, font: 1, texture: 1,
   tilt: 1, width: 1, corner: 1, cornerAt: 1, shadow: 1,
-  titleSize: 1, taskSize: 1, check: 1, doneStrike: 1, doneFade: 1, pin: 1
+  titleSize: 1, taskSize: 1, check: 1, doneStrike: 1, doneFade: 1, pin: 1,
+  frameCorners: 1, frameEdges: 1, frameColor: 1
 };
 
 /* Step size for a slider: fractional tokens need fine steps, pixel ones don't. */

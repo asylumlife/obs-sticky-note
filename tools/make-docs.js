@@ -25,6 +25,9 @@ r('src/theme.js').split('\n').forEach(function (line) {
 function cell(s) { return String(s).replace(/\|/g, '\\|'); }
 
 function describe(key) {
+  if (ctx.SET_VALUES[key]) {
+    return 'any of: ' + cell(ctx.SET_VALUES[key].join(' '));
+  }
   if (notes[key]) return cell(notes[key]);
   if (ctx.ENUM_VALUES[key]) return cell(ctx.ENUM_VALUES[key].join(' | '));
   if (ctx.COLOR_KEYS[key]) return 'hex colour';
@@ -57,13 +60,29 @@ ctx.FIELD_GROUPS.forEach(function (g) {
   g.fields.forEach(function (f) {
     var k = f[0];
     var d = ctx.DEFAULTS[k];
-    var shown = d === '' ? '_derived_' : '`' + JSON.stringify(d) + '`';
+    /* '' means two different things: nothing selected for a set token, and
+       "work it out from another colour" for a colour token. */
+    var shown = d !== '' ? '`' + JSON.stringify(d) + '`'
+      : (ctx.SET_VALUES[k] ? '_none_' : '_derived_');
     out.push('| `' + k + '` | ' + shown + ' | ' + describe(k) + ' | '
       + (ctx.BASIC_FIELDS[k] ? 'yes' : '' ) + ' |');
   });
   out.push('');
 });
 
+out.push('## Accents');
+out.push('');
+out.push('`frameCorners` and `frameEdges` are sets: list the corners or edges you');
+out.push('want, space separated, in any order (`"tl br"`, `"t b"`). Empty means no');
+out.push('accent. Corners are drawn as L-shaped brackets sized by `frameLength` and');
+out.push('`frameWidth`; edges are rules down the full side sized by `frameEdgeWidth`.');
+out.push('The two carry separate colours, so brackets and side rules need not match.');
+out.push('');
+out.push('This replaced an older `frame` token that offered three fixed arrangements.');
+out.push('Each of those is a selection here — `brackets` was all four corners,');
+out.push('`rule-left` a single left edge, `inset` all four edges pulled in — and old');
+out.push('themes and share codes still load, translated on the way in.');
+out.push('');
 out.push('## Derived colours');
 out.push('');
 out.push('Tokens marked _derived_ work themselves out from another colour when left');

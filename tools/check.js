@@ -25,6 +25,7 @@ var ctx = vm.createContext({
 vm.runInContext(r('src/theme.js') + '\n' + r('src/themes.js'), ctx, { filename: 'theme.js' });
 
 var DEFAULTS = ctx.DEFAULTS, RANGES = ctx.RANGES, ENUMS = ctx.ENUMS;
+var SET_VALUES = ctx.SET_VALUES;
 var ENUM_VALUES = ctx.ENUM_VALUES, COLOR_KEYS = ctx.COLOR_KEYS;
 var FIELD_GROUPS = ctx.FIELD_GROUPS, BASIC_FIELDS = ctx.BASIC_FIELDS;
 var BUILTINS = ctx.BUILTINS, applyTheme = ctx.applyTheme;
@@ -147,6 +148,13 @@ Object.keys(COLOR_KEYS).forEach(function (k) {
   ok('colour key ' + k + ' defaults to a hex or ""',
      DEFAULTS[k] === '' || /^#[0-9a-f]{6}$/i.test(DEFAULTS[k]), String(DEFAULTS[k]));
 });
+/* set tokens need a declared vocabulary, or normalizeSet would strip them */
+Object.keys(SET_VALUES).forEach(function (k) {
+  ok('set token ' + k + ' is a real token', k in DEFAULTS);
+  ok('set token ' + k + ' defaults to empty', DEFAULTS[k] === '');
+  ok('set token ' + k + ' is not also an enum', !ENUM_VALUES[k]);
+});
+
 /* a numeric token with no range would give the builder an unbounded slider */
 Object.keys(DEFAULTS).forEach(function (k) {
   if (typeof DEFAULTS[k] !== 'number' || k === 'v') return;
@@ -190,6 +198,70 @@ BUILTINS.forEach(function (b) {
        v.indexOf('undefined') === -1 && v.indexOf('NaN') === -1, v);
   });
 });
+
+/* --- 6b. frame accents --- */
+
+/* The three background lists must stay the same length whatever is selected;
+   a mismatch silently shifts every layer onto the wrong size. */
+/* Count top-level commas only: every layer is an rgba() full of commas of
+   its own, so a plain split lands at eight times the real layer count. */
+function countLayers(v) {
+  var s = String(v);
+  if (s === 'none') return 0;
+  var depth = 0, n = 1;
+  for (var i = 0; i < s.length; i++) {
+    if (s[i] === '(') depth++;
+    else if (s[i] === ')') depth--;
+    else if (s[i] === ',' && depth === 0) n++;
+  }
+  return n;
+}
+
+function frameListsFor(sel) {
+  var f = applyToFake(sel).fake.style;
+  return [countLayers(f['--frame-img']), countLayers(f['--frame-size']),
+          countLayers(f['--frame-pos'])];
+}
+[
+  {}, { frameCorners: 'tl tr bl br' }, { frameEdges: 'l' },
+  { frameCorners: 'tl', frameEdges: 't r b l' },
+  { frameCorners: 'tl tr bl br', frameEdges: 't r b l' }
+].forEach(function (sel) {
+  var n = frameListsFor(sel);
+  var expect = (sel.frameCorners ? sel.frameCorners.split(' ').length * 2 : 0)
+             + (sel.frameEdges ? sel.frameEdges.split(' ').length : 0);
+  var label = JSON.stringify(sel);
+  if (!expect) {
+    /* nothing selected: one inert `none` layer, whatever size/position say */
+    ok('no accent draws nothing for ' + label,
+       applyToFake(sel).fake.style['--frame-img'] === 'none');
+    return;
+  }
+  ok('frame lists align for ' + label, n[0] === n[1] && n[1] === n[2], n.join('/'));
+  ok('frame layer count for ' + label, n[0] === expect, 'got ' + n[0] + ' want ' + expect);
+});
+
+/* Selections are order- and case-insensitive going in, canonical coming out,
+   so the same choice always encodes to the same string. */
+ok('set canonicalises order', normalize({ frameCorners: 'br tl' }).frameCorners === 'tl br');
+ok('set lowercases', normalize({ frameCorners: 'TL' }).frameCorners === 'tl');
+ok('set dedupes', normalize({ frameCorners: 'tl tl tl' }).frameCorners === 'tl');
+ok('set accepts commas', normalize({ frameEdges: 'l,r' }).frameEdges === 'r l');
+ok('set drops unknown members', normalize({ frameCorners: 'tl banana' }).frameCorners === 'tl');
+ok('set survives a non-string', normalize({ frameCorners: 42 }).frameCorners === '');
+
+/* Every old `frame` value was a selection the new tokens can express; codes
+   already in the wild have to keep working. */
+[['brackets', 'tl tr bl br', ''], ['rule-left', '', 'l'],
+ ['inset', '', 't r b l'], ['none', '', '']].forEach(function (c) {
+  var t = normalize({ frame: c[0] });
+  ok('legacy frame ' + c[0] + ' maps corners', t.frameCorners === c[1], t.frameCorners);
+  ok('legacy frame ' + c[0] + ' maps edges', t.frameEdges === c[2], t.frameEdges);
+});
+ok('legacy-only code is still recognised as a theme', !!decodeTheme('{"frame":"brackets"}'));
+ok('explicit tokens beat the legacy mapping',
+   normalize({ frame: 'brackets', frameCorners: 'tl' }).frameCorners === 'tl');
+ok('frame is gone from the token set', !('frame' in DEFAULTS));
 
 /* --- 7. hostile input --- */
 ok('rejects plain text', decodeTheme('hello') === null);

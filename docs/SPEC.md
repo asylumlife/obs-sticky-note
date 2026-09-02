@@ -87,8 +87,9 @@ This came out of the Asylum Life theme, which under the old design needed about
 colours. That was the signal the system was too narrow. It is now the test case:
 if Asylum cannot be expressed as pure data, the token set is wrong.
 
-The 67 tokens cover paper (colour, gradient, opacity, six textures), ink and
-accent, silhouette (width, radius, tilt, padding, border, shadow, frame),
+The 74 tokens cover paper (colour, gradient, opacity, six textures), ink and
+accent, silhouette (width, radius, tilt, padding, border, shadow), accent
+brackets and edge rules (any corners, any edges, separate colours and weights),
 corner treatment (five fold styles, any corner, any size), tape or pushpin,
 type (seven font stacks, title styling, drop shadow, glow), checkbox (four
 shapes, size, stroke, fill and tick colour, hand-drawn jitter), how a finished

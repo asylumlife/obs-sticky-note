@@ -204,40 +204,21 @@
     --tex-2-pos: 1px 2px;
   }
 
-  /* ---------- Frame ----------
-     Its own element rather than more background slots on .note: brackets need
-     eight layers and would wreck the alignment of the texture lists. */
+  /* ---------- Frame accents ----------
+     Corner brackets and edge rules, on their own element rather than as more
+     background slots on .note: the layer count varies with how many corners
+     and edges are selected, which would wreck the alignment of the texture
+     lists. The lists themselves are generated in theme.js, so this rule does
+     not care whether it is drawing one corner or a full border. */
   .note-frame {
     position: absolute;
-    inset: calc(var(--border-w, 0px) * -1);
+    inset: calc(var(--border-w, 0px) * -1 + var(--frame-inset, 0px));
     pointer-events: none;
     z-index: 2;
-  }
-  .note[data-frame="none"] .note-frame { display: none; }
-
-  /* Brackets rather than a continuous frame: corners read as instrument, a
-     full outline reads as web card. */
-  .note[data-frame="brackets"] .note-frame {
-    --b: var(--frame-c);
-    background-image:
-      linear-gradient(var(--b),var(--b)), linear-gradient(var(--b),var(--b)),
-      linear-gradient(var(--b),var(--b)), linear-gradient(var(--b),var(--b)),
-      linear-gradient(var(--b),var(--b)), linear-gradient(var(--b),var(--b)),
-      linear-gradient(var(--b),var(--b)), linear-gradient(var(--b),var(--b));
-    background-size:
-      18px 2px, 2px 18px,  18px 2px, 2px 18px,
-      18px 2px, 2px 18px,  18px 2px, 2px 18px;
-    background-position:
-      0 0, 0 0,  100% 0, 100% 0,
-      0 100%, 0 100%,  100% 100%, 100% 100%;
+    background-image: var(--frame-img, none);
+    background-size: var(--frame-size, auto);
+    background-position: var(--frame-pos, 0 0);
     background-repeat: no-repeat;
-  }
-  .note[data-frame="rule-left"] .note-frame {
-    background: linear-gradient(var(--frame-c), var(--frame-c)) 0 0 / 3px 100% no-repeat;
-  }
-  .note[data-frame="inset"] .note-frame {
-    border: 1px solid var(--frame-c);
-    inset: 5px;
   }
 
   /* ---------- Folded corner ---------- */
