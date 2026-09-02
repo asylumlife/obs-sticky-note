@@ -1,2 +1,6 @@
 .DS_Store
 .claude/settings.local.json
+*.code-workspace
+
+# generated for screenshots and visual checks; not part of the shipped app
+tools/gallery.html

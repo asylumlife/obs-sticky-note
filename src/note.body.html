@@ -1,0 +1,56 @@
+  <div class="toolbar" id="toolbar" hidden>
+    <div class="toolbar-row">
+      <div class="swatches" id="swatches"></div>
+      <div class="toolbar-actions">
+        <button id="theme-btn" type="button">Theme</button>
+        <button id="uncheck-all" type="button">Uncheck all</button>
+        <button id="clear-list" type="button">Clear list</button>
+      </div>
+    </div>
+    <div class="toolbar-row tweaks">
+      <label class="tweak">Size
+        <input id="size-slider" type="range" min="50" max="200" step="5">
+        <span class="val" id="size-val"></span>
+      </label>
+      <label class="tweak">Tilt
+        <input id="rot-slider" type="range" min="-15" max="15" step="1">
+        <span class="val" id="rot-val"></span>
+      </label>
+      <label class="tweak">Paper
+        <input id="paper-color" type="color">
+      </label>
+      <label class="tweak">Ink
+        <input id="ink-color" type="color">
+      </label>
+    </div>
+    <div class="theme-panel" id="theme-panel" hidden>
+      <div class="theme-panel-hint">
+        Paste a code from the Theme Builder to add a theme, or copy this note's
+        theme to share it.
+      </div>
+      <textarea id="theme-code" spellcheck="false" placeholder="sn1:..."></textarea>
+      <div class="theme-panel-actions">
+        <button id="theme-apply" type="button">Add theme</button>
+        <button id="theme-copy" type="button">Copy current</button>
+        <button id="theme-remove" type="button" hidden>Remove</button>
+        <span class="theme-msg" id="theme-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="note-wrap">
+    <div class="note" id="note">
+      <div class="note-frame"></div>
+      <div class="note-pin"></div>
+      <div class="note-title" id="title"></div>
+      <ul id="tasks"></ul>
+      <div class="add-row" id="add-row" hidden>
+        <span class="plus">+</span>
+        <input id="add-input" type="text" maxlength="200" placeholder="Add a task, press Enter">
+      </div>
+      <div id="progress" hidden></div>
+      <div class="stamp" id="stamp" hidden>All done!</div>
+    </div>
+  </div>
+
+  <div id="setup" hidden></div>

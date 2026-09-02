@@ -1,0 +1,13 @@
+{
+  "name": "obs-sticky-note",
+  "version": "0.2.0",
+  "description": "A sticky-note checklist for OBS: a control dock plus an on-stream overlay, in one HTML file.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.js && node tools/make-docs.js",
+    "check": "node build.js --check && node tools/check.js",
+    "gallery": "node tools/make-gallery.js"
+  },
+  "engines": { "node": ">=14" }
+}

@@ -1,0 +1,71 @@
+  <div class="app">
+    <aside class="panel">
+      <div class="panel-head">
+        <h1>Sticky Note Theme Builder</h1>
+        <p>Design a look, copy the code, paste it into the note's Theme panel
+           inside OBS.</p>
+        <div class="head-row">
+          <input id="theme-name" type="text" maxlength="60" placeholder="Theme name"
+                 aria-label="Theme name">
+        </div>
+        <div class="head-row">
+          <select id="preset" aria-label="Start from">
+            <option value="">Start from...</option>
+          </select>
+          <div class="seg" id="detail" role="group" aria-label="Level of detail">
+            <button type="button" data-detail="basic" class="on">Basics</button>
+            <button type="button" data-detail="all">Everything</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-scroll" id="controls"></div>
+    </aside>
+
+    <main class="stage">
+      <div class="stage-bar">
+        <span class="lab">Behind the note</span>
+        <div class="bg-dots" id="bg-dots">
+          <button class="bg-dot on" type="button" data-bg="checker"
+                  style="background:repeating-conic-gradient(#3a3f47 0 25%,#23262b 0 50%) 0 0/12px 12px"
+                  title="Transparent"></button>
+          <button class="bg-dot" type="button" data-bg="dark"
+                  style="background:radial-gradient(circle at 34% 30%,#2f3a4a,#12151a)"
+                  title="Dark scene"></button>
+          <button class="bg-dot" type="button" data-bg="light"
+                  style="background:radial-gradient(circle at 40% 30%,#eef1f5,#b9c2cd)"
+                  title="Bright scene"></button>
+          <button class="bg-dot" type="button" data-bg="busy"
+                  style="background:linear-gradient(20deg,#3d7a44,#6b4b8a 55%,#b8863a)"
+                  title="Busy scene"></button>
+        </div>
+        <label class="lab"><input type="checkbox" id="done-toggle" checked> Show checked items</label>
+        <label class="lab"><input type="checkbox" id="stamp-toggle"> Show stamp</label>
+      </div>
+
+      <div class="canvas" id="canvas" data-bg="checker">
+        <div class="note" id="preview">
+          <div class="note-frame"></div>
+          <div class="note-pin"></div>
+          <div class="note-title" id="p-title"></div>
+          <ul id="p-tasks" class="tasks"></ul>
+          <div id="p-progress"></div>
+          <div class="stamp" id="p-stamp" hidden></div>
+        </div>
+      </div>
+
+      <div class="out">
+        <div class="out-head">
+          <strong>Theme code</strong>
+          <span>Copy this, then paste it into the note's Theme panel in OBS.</span>
+        </div>
+        <textarea id="code" spellcheck="false" aria-label="Theme code"></textarea>
+        <div class="out-actions">
+          <button class="btn primary" id="copy" type="button">Copy code</button>
+          <button class="btn" id="load" type="button">Load pasted code</button>
+          <button class="btn" id="download" type="button">Save .json</button>
+          <button class="btn" id="reset" type="button">Reset</button>
+          <span class="msg" id="msg"></span>
+        </div>
+      </div>
+    </main>
+  </div>
