@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The shipped HTML files are committed so people can download one file and
+      # be done. That only works if they actually match src/.
+      - name: Built files match src/
+        run: node build.js --check
+
+      - name: Token system is consistent
+        run: node tools/check.js
+
+      # docs/THEMES.md is generated; a stale one is worse than none.
+      - name: Generated docs are current
+        run: |
+          node tools/make-docs.js
+          git diff --exit-code docs/THEMES.md

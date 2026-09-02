@@ -1,0 +1,68 @@
+name: Bug report
+description: Something doesn't work
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: if the dock and overlay aren't syncing, check that the
+        browser source has **Local file unchecked** and uses the exact same
+        `file:///` URL as the dock. That's the cause the vast majority of the
+        time — see the Troubleshooting section of the README.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations: { required: true }
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations: { required: true }
+
+  - type: input
+    id: obs
+    attributes:
+      label: OBS version
+      placeholder: "e.g. 30.2.3"
+    validations: { required: true }
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows, macOS, Linux]
+    validations: { required: true }
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen
+      options:
+        - The dock (control panel)
+        - The on-stream overlay
+        - Both
+        - The theme builder
+    validations: { required: true }
+
+  - type: textarea
+    id: theme
+    attributes:
+      label: Theme code
+      description: >
+        If it's specific to a theme, paste the code here — the dock's Theme
+        panel has a "Copy current" button. This makes it reproducible in one
+        step.
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots are welcome, especially for anything visual.

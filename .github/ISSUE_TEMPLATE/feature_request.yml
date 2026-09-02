@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest something
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: >
+        The situation, rather than the solution — it often turns out there's a
+        simpler way to get there.
+    validations: { required: true }
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+    validations: { required: true }
+
+  - type: checkboxes
+    id: theme
+    attributes:
+      label: Is this a look you can't achieve?
+      options:
+        - label: >
+            I tried the theme builder and no combination of settings gets me
+            there.
+  - type: markdown
+    attributes:
+      value: |
+        If you ticked that box, say what you were trying to make it look like.
+        A look that the tokens can't express is a gap in the token set, and
+        that's worth fixing properly rather than working around.
