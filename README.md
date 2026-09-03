@@ -77,10 +77,27 @@ appears.
 
 Click **List** in the dock toolbar.
 
-**Copy list** gives you a code holding your title, your tasks, and which are
-ticked. Keep it somewhere — a pinned Discord message, a text file, wherever.
-Your tasks live in OBS's browser storage, and clearing OBS's browser cache
-takes them with it, so this is the backup.
+**Save .json** writes your list to a file — one per stream if you like. It's
+plain readable JSON, so you can edit it in any text editor:
+
+```json
+{ "v": 1, "title": "Stream Prep",
+  "tasks": [ { "text": "Set up the scene", "done": true } ] }
+```
+
+**Open .json** reads one back into the box, ready to Replace or Add.
+
+**Copy list** gives you the same thing as a code you can paste into a Discord
+message. Use it if your OBS build doesn't open file dialogs — some don't — or
+to send a list to someone else.
+
+Either way, this is the backup: your tasks live in OBS's browser storage, and
+clearing OBS's browser cache takes them with it.
+
+> **Why not just keep a `list.json` next to the app and load it automatically?**
+> Because it can't work. A page opened from `file://` gets an opaque origin, so
+> reading a file sitting beside it counts as cross-origin and the browser
+> blocks it. Loading a file has to start from a click.
 
 **Replace list** and **Add to list** take that code back, and also take **plain
 text — one task per line**:

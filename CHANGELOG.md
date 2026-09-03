@@ -9,8 +9,18 @@ it, and there was nothing you could do about that: themes could be copied out
 and pasted back, but the tasks — the part anyone would actually miss — could
 not.
 
-**Copy list** produces a code carrying the title, the tasks, and which are
-ticked. **Replace list** and **Add to list** take it back.
+**Save .json** writes the list to a readable, hand-editable file and **Open
+.json** reads one back. **Copy list** produces the same thing as a code, for
+pasting into a chat window or for OBS builds that do not open file dialogs.
+**Replace list** and **Add to list** take either back.
+
+Loading a `list.json` sitting beside the app automatically is not possible, and
+that is not a decision: a `file://` page has an opaque origin, so fetching a
+sibling file is cross-origin and blocked. Opening a file has to begin with a
+click.
+
+The theme builder gained the matching **Open .json** it had been missing — it
+could already save one.
 
 They also take plain text, one task per line, because that is where checklists
 actually come from — a notes app, a Discord message, the description of the

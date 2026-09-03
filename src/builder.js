@@ -30,6 +30,7 @@
     copy: document.getElementById('copy'),
     load: document.getElementById('load'),
     download: document.getElementById('download'),
+    openfile: document.getElementById('openfile'),
     reset: document.getElementById('reset'),
     msg: document.getElementById('msg'),
     title: document.getElementById('p-title'),
@@ -418,14 +419,16 @@
   });
 
   el.download.addEventListener('click', function () {
-    var blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = slug(theme.label) + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    saveTextFile(slug(theme.label) + '.json', JSON.stringify(theme, null, 2));
+  });
+
+  el.openfile.addEventListener('click', function () {
+    openTextFile('.json,application/json,text/plain', function (text, filename) {
+      var t = decodeTheme(text);
+      if (!t) { flash('No theme found in ' + filename + '.', 'bad'); return; }
+      adopt(t, 'Loaded ' + filename + '.');
+      clearPreset();
+    }, function (msg) { flash(msg, 'bad'); });
   });
 
   el.reset.addEventListener('click', function () {
