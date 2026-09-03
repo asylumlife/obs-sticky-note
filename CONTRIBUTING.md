@@ -12,11 +12,11 @@ node tools/make-docs.js # regenerate docs/THEMES.md
 
 ## How the repo fits together
 
-The two files at the root — `sticky-note.html` and `theme-builder.html` — are
+The two files at the root, `sticky-note.html` and `theme-builder.html`, are
 **generated and committed**. Committing build output is usually a smell, but
-here it is the product: someone downloads one file, drops it anywhere, and
-points OBS at it. Nobody should need Node to use this. CI runs
-`node build.js --check` so the committed files can never drift from source.
+here it is the product: you download one file, drop it anywhere, and point OBS
+at it. Nobody should need Node to use this. CI runs `node build.js --check` so
+the committed files can't drift from source.
 
 Edit `src/`, never the root HTML.
 
@@ -46,8 +46,8 @@ Don't write CSS. A theme is data in `src/themes.js`: a partial object listing
 only what differs from the defaults. Easiest path is to design it in
 `theme-builder.html`, click **Save .json**, and paste the values in.
 
-If you find yourself wanting a selector to express your theme, that is a
-missing token — see below.
+If you want a CSS selector to express your theme, you have found a missing
+token. See below.
 
 ## Adding a token
 
@@ -58,7 +58,7 @@ can. `note.css` contains no theme names, and `tools/check.js` fails if a
 
 To add one:
 
-1. Add it to `DEFAULTS` in `src/theme.js`, with a trailing comment — that
+1. Add it to `DEFAULTS` in `src/theme.js` with a trailing comment. That
    comment becomes its description in the generated docs.
 2. Add a range to `RANGES` if it is numeric, or values to `ENUM_VALUES` if it
    is a fixed set. Numeric tokens without a range fail the checks, because the
@@ -73,35 +73,33 @@ To add one:
 Then `node tools/check.js`. It verifies every token is exposed exactly once,
 every custom property the CSS reads is actually produced, every `data-*` the
 CSS selects on is written, and that all eight built-ins still round-trip
-through a share code unchanged. Skipping a step is caught rather than shipped:
-a token that is emitted but has no default writes `undefinedpx` into a custom
+through a share code unchanged. It catches a skipped step before you ship it.
+A token that is emitted but has no default writes `undefinedpx` into a custom
 property, which invalidates the whole declaration instead of falling back.
 
 ## Things worth knowing
 
 **Colour maths happens in JavaScript, not CSS.** `color-mix()` and relative
-colour syntax would be tidier, but they need a newer Chromium than some
-shipping OBS builds carry, and a theme that silently loses its colours on
-someone's OBS is a bad trade for shorter code.
+colour syntax are tidier but need a newer Chromium than some shipping OBS
+builds carry. Themes would lose their colours on those builds.
 
 **The dock and the overlay are the same file** with a `?view=dock` parameter,
 kept in sync through `localStorage` plus a one-second poll. The poll is the
 fallback for when `storage` events don't cross OBS's browser contexts.
 
-**The builder cannot talk to the note.** It runs in your desktop browser; the
-note runs inside OBS's embedded one. Separate browsers, separate storage. That
-is why themes travel as a code you copy, and it is not a limitation worth
-trying to engineer around.
+**The builder can't talk to the note.** It runs in your desktop browser and
+the note runs in OBS's. Separate browsers, separate storage. Themes travel as
+a code you copy for that reason.
 
 **Anything pasted in is untrusted.** `decodeTheme` takes a code off someone's
 clipboard, so it drops unknown keys, clamps numbers to their ranges, rejects
-values outside an enum, and returns `null` rather than half-applying junk.
+values outside an enum, and returns `null` instead of half-applying junk.
 
 ## Checking your work
 
-`tools/make-gallery.js` renders all eight themes onto one page — useful for
-eyeballing a change across every theme at once, and it is where the README's
-theme grid comes from.
+`tools/make-gallery.js` renders all eight themes onto one page. Useful for
+checking a change across every theme at once, and it produces the README's
+theme grid.
 
 For a real check, load the file in OBS. Some things only show up there:
 transparency over live video, how the dock behaves at the width OBS gives it,

@@ -7,8 +7,8 @@ body:
     attributes:
       label: What are you trying to do
       description: >
-        The situation, rather than the solution — it often turns out there's a
-        simpler way to get there.
+        Describe the situation, not the solution. There is often a simpler
+        way to get there.
     validations: { required: true }
 
   - type: textarea
@@ -28,6 +28,6 @@ body:
   - type: markdown
     attributes:
       value: |
-        If you ticked that box, say what you were trying to make it look like.
-        A look that the tokens can't express is a gap in the token set, and
-        that's worth fixing properly rather than working around.
+        If you ticked that box, say what you were trying to make it look
+        like. A look the tokens can't express is a gap in the token set, and
+        that's worth fixing at the source.

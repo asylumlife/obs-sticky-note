@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /*
  * Consistency checks for the token system. These exist because the three
- * pieces — DEFAULTS, the CSS that reads the properties, and the builder's
- * field groups — are easy to edit out of step, and every way of getting it
- * wrong is silent: a missing default writes "undefinedpx" into a custom
- * property, which invalidates the whole declaration rather than falling back.
+ * pieces (DEFAULTS, the CSS that reads the properties, and the builder's
+ * field groups) are easy to edit out of step, and every way of getting it
+ * wrong is silent. A missing default writes "undefinedpx" into a custom
+ * property, which invalidates the whole declaration instead of falling back.
  *
  *   node tools/check.js
  */
@@ -15,9 +15,9 @@ var path = require('path');
 var ROOT = path.join(__dirname, '..');
 var r = function (p) { return fs.readFileSync(path.join(ROOT, p), 'utf8'); };
 
-/* The browser sources are plain scripts, not modules — no exports to require.
-   Run them in a context and lift the names out, which also proves they don't
-   quietly depend on anything the browser provides beyond what's stubbed here. */
+/* The browser sources are plain scripts, not modules, so there is nothing to
+   require. Run them in a context and lift the names out, which also proves
+   they depend on nothing beyond what is stubbed here. */
 var ctx = vm.createContext({
   btoa: function (s) { return Buffer.from(s, 'binary').toString('base64'); },
   atob: function (s) { return Buffer.from(s, 'base64').toString('binary'); }

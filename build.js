@@ -93,7 +93,7 @@ TARGETS.forEach(function (t) {
       console.log('ok       ' + t.out);
     } else {
       failed++;
-      console.error('STALE    ' + t.out + '  — run `node build.js`');
+      console.error('STALE    ' + t.out + '  (run `node build.js`)');
     }
     return;
   }

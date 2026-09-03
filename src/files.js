@@ -1,14 +1,14 @@
 /* ---------------------------------------------------------------------------
  * Saving to and loading from a file
  *
- * Both of these need a click behind them — a page cannot write to a path of
- * its choosing, or read one, without the person saying so. That is also why
+ * Both need a click behind them. A page cannot write to a path of its
+ * choosing, or read one, without you saying so. That is also why
  * there is no "keep list.json next to the app and load it on startup": a
  * file:// page gets an opaque origin, so fetching a file sitting beside it is
  * a cross-origin request and is blocked. Verified, not assumed.
  *
  * So files are the good option for keeping a backup on disk, and pasted text
- * stays the one that always works — including inside a browser source, and
+ * stays the one that always works, including inside a browser source and
  * when sending a list to somebody else.
  * ------------------------------------------------------------------------- */
 

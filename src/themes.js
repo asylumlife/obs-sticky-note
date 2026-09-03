@@ -2,7 +2,7 @@
  * Built-in themes
  *
  * Each is a partial: only what differs from DEFAULTS. They are ordinary theme
- * data with no special status — the builder round-trips them, and a theme you
+ * data with no special status. The builder round-trips them, and a theme you
  * paste in sits alongside them as an equal.
  *
  * `swatch` is the toolbar dot only. It isn't a token; it's just the colour
@@ -52,8 +52,8 @@ var BUILTINS = [
   },
 
   /* Not a repaint like the others: this replaces the sticky-note silhouette
-     with an instrument-panel skin — no tilt, no curl, semi-transparent ground,
-     corner brackets instead of a frame, Barlow instead of the handwritten face.
+     with an instrument-panel skin: no tilt, no curl, translucent ground, corner
+     brackets instead of a frame, Barlow instead of the handwritten face.
      It is the reason the token set looks the way it does. Everything below is
      plain data; there is no Asylum-specific CSS anywhere. */
   {

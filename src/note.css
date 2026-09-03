@@ -131,8 +131,8 @@
   #note-wrap > .note { margin-left: auto; margin-right: auto; }
   /* An OBS dock pane is often narrower than the note. Without this the fixed
      width of the note sets the width of the whole page, and the toolbar lays
-     itself out against that phantom width — leaving its buttons rendered
-     outside the visible pane with no way to scroll to them. */
+     itself out against that phantom width, leaving its buttons rendered outside
+     the visible pane with no way to scroll to them. */
   body.dock #note-wrap { overflow-x: auto; }
 
   .note {
@@ -256,9 +256,9 @@
     filter: drop-shadow(-2px -2px 3px rgba(0,0,0,.3));
   }
   /* torn off: the sheet is bitten away along its bottom edge.
-     One mask layer, no compositing — the two-layer intersect version needs
+     One mask layer, no compositing. The two-layer intersect version needs
      -webkit-mask-composite and mask-composite to agree on semantics they do
-     not share, and gets you an invisible note when they disagree. A radial
+     not share, and gives you an invisible note when they disagree. A radial
      gradient that is opaque past its radius scallops the edge on its own. */
   .note[data-corner="torn"] {
     --torn-r: calc(var(--corner-size, 32px) * .28);
@@ -338,8 +338,8 @@
 
   /* ---------- The item you are on right now ----------
      Marks live in the padding beside the row rather than in the flow, so
-     turning one on never reflows the list — the text stays exactly where it
-     was, which matters when this is changing live on stream. */
+     turning one on never reflows the list. The text stays where it was, which
+     matters when this changes live on stream. */
   .task.current .text { font-weight: var(--current-weight, inherit); }
   .note[data-current="none"] .task.current .text { font-weight: inherit; }
 
@@ -404,8 +404,8 @@
 
   body.dock .checkbox { cursor: pointer; }
   /* Centred on the box and scaled with it, so a tick can deliberately overhang
-     a small box — the nudge matches where a tick drawn by hand actually lands,
-     high and slightly left of centre. */
+     a small box. The nudge puts it where a hand-drawn tick lands, high and a
+     little left of centre. */
   .checkbox svg {
     position: absolute;
     left: 50%; top: 50%;
@@ -449,8 +449,8 @@
   }
 
   /* ---------- How a finished task reads ----------
-     Struck out, faded, or both — independent, because a note can want the pen
-     stroke without the task receding into the paper. */
+     Struck out, faded, or both, kept independent because a note can want the
+     pen stroke without the task receding into the paper. */
   .note[data-done-strike="on"] .task.done .txt { background-size: 100% var(--strike-w, 2.5px); }
   .note[data-done-fade="dim"] .task.done { opacity: var(--done-dim, .55); }
   .note[data-done-fade="mute"] .task.done .text { color: var(--done-c, var(--ink-soft)); }

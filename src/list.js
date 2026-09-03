@@ -3,7 +3,7 @@
  *
  * The list lives in OBS's browser storage, which the README has to warn people
  * is wiped along with OBS's browser cache. Themes could already be copied out
- * and pasted back; the tasks — the thing anyone would actually miss — could
+ * and pasted back. The tasks, which is what anyone would actually miss, could
  * not. This closes that.
  *
  * Export is a code, so a list round-trips exactly, done marks included.
@@ -42,9 +42,9 @@ function cleanText(s) {
   return String(s).replace(/\s+/g, ' ').trim().slice(0, MAX_TASK_LEN);
 }
 
-/* One task per line. Strips the punctuation people's lists already carry —
-   bullets, numbering, markdown checkboxes — so pasting from somewhere else
-   just works, and reads a ticked markdown box as a finished task. */
+/* One task per line. Strips the punctuation lists already carry (bullets,
+   numbering, markdown checkboxes) so a list written elsewhere pastes in, and
+   reads a ticked markdown box as a finished task. */
 function parsePlainList(text) {
   var out = [];
   String(text).split(/\r?\n/).forEach(function (raw) {
@@ -106,10 +106,9 @@ function decodeList(text) {
     };
   }
 
-  /* A code for something else — a theme, most likely — would otherwise sail
-     through as a single plain-text task made of base64. Somebody is going to
-     paste into the wrong box, and turning their theme into a task named
-     "sn1:eyJ2Ijox..." is a worse answer than saying no. */
+  /* A code for something else, a theme most likely, would otherwise sail
+     through as one plain-text task made of base64. Somebody will paste into
+     the wrong box, and a task named "sn1:eyJ2Ijox..." helps nobody. */
   if (/^[a-z][a-z0-9]*:[A-Za-z0-9+/=]+$/.test(raw)) return null;
 
   var plain = parsePlainList(raw);

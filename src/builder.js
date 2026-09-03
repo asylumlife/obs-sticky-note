@@ -97,7 +97,7 @@
     refreshCode();
     /* Widgets draw themselves in the colours they represent, so they have to
        follow a colour change made elsewhere in the panel. Only widgets are
-       repainted here — repainting ordinary inputs would fight with a slider
+       repainted here. Repainting ordinary inputs would fight with a slider
        mid-drag or a half-typed field. */
     widgetPaints.forEach(function (paint) { paint(); });
     try { localStorage.setItem(KEY, JSON.stringify(theme)); } catch (e) { /* private mode */ }
@@ -119,7 +119,7 @@
    * Custom widgets
    *
    * Most controls are inferred from a token's default. A few tokens are
-   * better shown than listed — picking which corners carry an accent is a
+   * better shown than listed. Picking which corners carry an accent is a
    * spatial question, and eight checkboxes make you hold the picture in your
    * head. A widget registered here takes over rendering for its token, and
    * may drive more than one (the frame picker owns both the corner and the

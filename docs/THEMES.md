@@ -1,9 +1,9 @@
 # Theme tokens
 
-A theme is a JSON object. Every field is optional — anything you leave out
-falls back to the default below, so the smallest useful theme is a couple of
-colours. There is no per-theme CSS anywhere in the project: these tokens are
-the entire vocabulary, and the built-in themes use nothing you cannot.
+A theme is a JSON object. Every field is optional, so the smallest useful
+theme is a couple of colours and anything you leave out takes the default
+below. No CSS in the project names a theme: these tokens are the whole
+vocabulary, and the built-ins use nothing you cannot.
 
 You do not have to write these by hand. Open `theme-builder.html` in a normal
 browser, design what you want, and copy the code it gives you.
@@ -129,30 +129,29 @@ browser, design what you want, and copy the code it gives you.
 `frameCorners` and `frameEdges` are sets: list the corners or edges you
 want, space separated, in any order (`"tl br"`, `"t b"`). Empty means no
 accent. Corners are drawn as L-shaped brackets sized by `frameLength` and
-`frameWidth`; edges are rules down the full side sized by `frameEdgeWidth`.
-The two carry separate colours, so brackets and side rules need not match.
+`frameWidth`. Edges are rules down the full side sized by `frameEdgeWidth`.
+Each takes its own colour, so brackets and side rules need not match.
 
 This replaced an older `frame` token that offered three fixed arrangements.
-Each of those is a selection here — `brackets` was all four corners,
-`rule-left` a single left edge, `inset` all four edges pulled in — and old
-themes and share codes still load, translated on the way in.
+Each is a selection here: `brackets` was all four corners, `rule-left` a
+single left edge, `inset` all four edges pulled in. Old themes and share
+codes still load, translated on the way in.
 
 ## Derived colours
 
-Tokens marked _derived_ work themselves out from another colour when left
-empty — `paper2` and `curl` from `paper`, `titleColor` and `checkColor` from
-`ink`. Set one explicitly and it stops deriving. In the builder these are the
-fields with an **Auto** tick next to them.
+Tokens marked _derived_ take their colour from another when left empty:
+`paper2` and `curl` from `paper`, `titleColor` and `checkColor` from `ink`.
+Set one and it stops deriving. In the builder these carry an **Auto** tick.
 
-Deriving happens in JavaScript rather than in CSS (`color-mix()` and relative
-colour syntax need a newer Chromium than some shipping OBS builds carry), so a
-theme renders the same on old and new OBS alike.
+Deriving happens in JavaScript, not CSS. `color-mix()` and relative colour
+syntax need a newer Chromium than some shipping OBS builds carry, so themes
+would lose their colours there.
 
 ## Sharing a theme
 
-The builder produces a code starting `sn1:` — base64 of the JSON, carrying
+The builder produces a code starting `sn1:`: base64 of the JSON, carrying
 only the fields that differ from the defaults. Paste it into the note's
-**Theme** panel in the OBS dock. Raw JSON works there too, if you would rather
+**Theme** panel in the OBS dock. Raw JSON works there too if you would rather
 hand-edit.
 
 Codes are self-contained, so a theme is one paste to share and does not depend
@@ -172,8 +171,7 @@ ones take their defaults.
 | Midnight | `midnight` | 5 |
 | Asylum Life | `asylum` | 54 |
 
-**Asylum Life** is the one that shaped this list. It is not a repaint: no tilt,
-no folded corner, a semi-transparent panel with corner brackets, a condensed
-uppercase title and a different font. It is also plain data, like all the
-others — if it had needed one line of its own CSS, the token set would have
-been wrong.
+**Asylum Life** shaped this list. It is no repaint: no tilt, no folded
+corner, a translucent panel with corner brackets, a condensed uppercase
+title and a different font. It is plain data like the others. Had it needed
+one line of its own CSS, the token set would have been too narrow.

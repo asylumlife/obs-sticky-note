@@ -199,7 +199,7 @@
 
   /* Every rule below stays scoped to .framepick. The base `.framepick .fp`
      rule above zeroes the border, and an unscoped `.fp-tl::before` loses to it
-     on specificity — which renders the whole picker as an empty box. */
+     on specificity, which renders the whole picker as an empty box. */
 
   /* corners: an L of two arms, mirrored into each corner */
   .framepick .fp-tl, .framepick .fp-tr,

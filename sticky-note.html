@@ -144,8 +144,8 @@
   #note-wrap > .note { margin-left: auto; margin-right: auto; }
   /* An OBS dock pane is often narrower than the note. Without this the fixed
      width of the note sets the width of the whole page, and the toolbar lays
-     itself out against that phantom width — leaving its buttons rendered
-     outside the visible pane with no way to scroll to them. */
+     itself out against that phantom width, leaving its buttons rendered outside
+     the visible pane with no way to scroll to them. */
   body.dock #note-wrap { overflow-x: auto; }
 
   .note {
@@ -269,9 +269,9 @@
     filter: drop-shadow(-2px -2px 3px rgba(0,0,0,.3));
   }
   /* torn off: the sheet is bitten away along its bottom edge.
-     One mask layer, no compositing — the two-layer intersect version needs
+     One mask layer, no compositing. The two-layer intersect version needs
      -webkit-mask-composite and mask-composite to agree on semantics they do
-     not share, and gets you an invisible note when they disagree. A radial
+     not share, and gives you an invisible note when they disagree. A radial
      gradient that is opaque past its radius scallops the edge on its own. */
   .note[data-corner="torn"] {
     --torn-r: calc(var(--corner-size, 32px) * .28);
@@ -351,8 +351,8 @@
 
   /* ---------- The item you are on right now ----------
      Marks live in the padding beside the row rather than in the flow, so
-     turning one on never reflows the list — the text stays exactly where it
-     was, which matters when this is changing live on stream. */
+     turning one on never reflows the list. The text stays where it was, which
+     matters when this changes live on stream. */
   .task.current .text { font-weight: var(--current-weight, inherit); }
   .note[data-current="none"] .task.current .text { font-weight: inherit; }
 
@@ -417,8 +417,8 @@
 
   body.dock .checkbox { cursor: pointer; }
   /* Centred on the box and scaled with it, so a tick can deliberately overhang
-     a small box — the nudge matches where a tick drawn by hand actually lands,
-     high and slightly left of centre. */
+     a small box. The nudge puts it where a hand-drawn tick lands, high and a
+     little left of centre. */
   .checkbox svg {
     position: absolute;
     left: 50%; top: 50%;
@@ -462,8 +462,8 @@
   }
 
   /* ---------- How a finished task reads ----------
-     Struck out, faded, or both — independent, because a note can want the pen
-     stroke without the task receding into the paper. */
+     Struck out, faded, or both, kept independent because a note can want the
+     pen stroke without the task receding into the paper. */
   .note[data-done-strike="on"] .task.done .txt { background-size: 100% var(--strike-w, 2.5px); }
   .note[data-done-fade="dim"] .task.done { opacity: var(--done-dim, .55); }
   .note[data-done-fade="mute"] .task.done .text { color: var(--done-c, var(--ink-soft)); }
@@ -696,9 +696,8 @@
  * Theme tokens
  *
  * A theme is plain data. Nothing here knows about a specific built-in, and the
- * built-ins below get no privileges a user's theme doesn't also have — that's
- * the whole point. If a look can't be expressed as a token, the token set is
- * wrong, not the theme.
+ * built-ins below get no privileges a user's theme doesn't also have. If a
+ * look can't be expressed as a token, the token set is too narrow.
  *
  * Derived values (soft ink, gradient partner, curl shade) are computed here in
  * JS rather than in CSS. color-mix() and relative color syntax would be tidier
@@ -799,15 +798,15 @@ var DEFAULTS = {
   checkTickScale: 1.18,  /* tick size relative to the box; >1 overhangs */
   checkJitter: true,
 
-  /* the item you are on right now — nothing renders until one is marked */
+  /* the item you are on right now; nothing renders until one is marked */
   current: 'bar',        /* none | bar | arrow | dot | highlight */
   currentColor: '',      /* '' → the accent colour */
   currentBold: true,
 
   /* behaviour */
-  /* Striking a task out and fading it are separate decisions — the original
-     Asylum skin wanted the strike but not the fade — so they are separate
-     tokens rather than one enum of every combination. */
+  /* Striking a task out and fading it are separate decisions. The original
+     Asylum skin wanted the strike without the fade, which one enum of every
+     combination could not express. */
   doneStrike: true,
   doneFade: 'dim',       /* none | dim | mute */
   doneDim: 0.55,
@@ -1181,7 +1180,7 @@ function encodeTheme(theme) {
 }
 
 /* Accepts a share code or raw JSON, so pasting either works. Returns null when
-   it isn't a theme at all — the caller says so rather than applying junk. */
+   it isn't a theme at all, so the caller can say so instead of applying junk. */
 function decodeTheme(text) {
   var raw = String(text == null ? '' : text).trim();
   if (!raw) return null;
@@ -1199,7 +1198,7 @@ function decodeTheme(text) {
   /* A parsed object of entirely unknown keys is someone's clipboard, not a
      theme; normalize() would happily turn it into the default yellow note.
      Retired keys count as known, so a code written against an older token set
-     is still recognisably a theme — migrate() handles it from there. */
+     is still recognisably a theme. migrate() handles it from there. */
   var known = Object.keys(data).filter(function (k) {
     return Object.prototype.hasOwnProperty.call(DEFAULTS, k) || RETIRED_KEYS[k];
   });
@@ -1217,8 +1216,8 @@ function decodeTheme(text) {
  * from the token's default (enum -> select, boolean -> checkbox, number ->
  * slider) with colours listed explicitly, because a colour and a label are
  * both strings. Adding a token to DEFAULTS and naming it in a group below is
- * all it takes to get a working control — there is no hand-written form to
- * fall out of sync.
+ * all it takes to get a working control. No hand-written form can fall out
+ * of sync.
  *
  * `basic` names the handful of tokens most people actually reach for; the
  * builder opens on those and keeps the rest behind a toggle.
@@ -1309,7 +1308,7 @@ function stepFor(key) {
  * Built-in themes
  *
  * Each is a partial: only what differs from DEFAULTS. They are ordinary theme
- * data with no special status — the builder round-trips them, and a theme you
+ * data with no special status. The builder round-trips them, and a theme you
  * paste in sits alongside them as an equal.
  *
  * `swatch` is the toolbar dot only. It isn't a token; it's just the colour
@@ -1359,8 +1358,8 @@ var BUILTINS = [
   },
 
   /* Not a repaint like the others: this replaces the sticky-note silhouette
-     with an instrument-panel skin — no tilt, no curl, semi-transparent ground,
-     corner brackets instead of a frame, Barlow instead of the handwritten face.
+     with an instrument-panel skin: no tilt, no curl, translucent ground, corner
+     brackets instead of a frame, Barlow instead of the handwritten face.
      It is the reason the token set looks the way it does. Everything below is
      plain data; there is no Asylum-specific CSS anywhere. */
   {
@@ -1402,7 +1401,7 @@ var BUILTINS = [
  *
  * The list lives in OBS's browser storage, which the README has to warn people
  * is wiped along with OBS's browser cache. Themes could already be copied out
- * and pasted back; the tasks — the thing anyone would actually miss — could
+ * and pasted back. The tasks, which is what anyone would actually miss, could
  * not. This closes that.
  *
  * Export is a code, so a list round-trips exactly, done marks included.
@@ -1441,9 +1440,9 @@ function cleanText(s) {
   return String(s).replace(/\s+/g, ' ').trim().slice(0, MAX_TASK_LEN);
 }
 
-/* One task per line. Strips the punctuation people's lists already carry —
-   bullets, numbering, markdown checkboxes — so pasting from somewhere else
-   just works, and reads a ticked markdown box as a finished task. */
+/* One task per line. Strips the punctuation lists already carry (bullets,
+   numbering, markdown checkboxes) so a list written elsewhere pastes in, and
+   reads a ticked markdown box as a finished task. */
 function parsePlainList(text) {
   var out = [];
   String(text).split(/\r?\n/).forEach(function (raw) {
@@ -1505,10 +1504,9 @@ function decodeList(text) {
     };
   }
 
-  /* A code for something else — a theme, most likely — would otherwise sail
-     through as a single plain-text task made of base64. Somebody is going to
-     paste into the wrong box, and turning their theme into a task named
-     "sn1:eyJ2Ijox..." is a worse answer than saying no. */
+  /* A code for something else, a theme most likely, would otherwise sail
+     through as one plain-text task made of base64. Somebody will paste into
+     the wrong box, and a task named "sn1:eyJ2Ijox..." helps nobody. */
   if (/^[a-z][a-z0-9]*:[A-Za-z0-9+/=]+$/.test(raw)) return null;
 
   var plain = parsePlainList(raw);
@@ -1624,9 +1622,8 @@ function decodeList(text) {
       /* Pre-token saves stored `theme: 'yellow' | 'custom'` with the two custom
          colours alongside, and always carried a concrete `rotation` even when
          the user had never touched the slider. Reading that back as an
-         override would pin every theme to the old default angle — Asylum, for
-         one, is designed flat — so on migration the tilt is deliberately left
-         to the theme. A save that already knows about themeId came from this
+         override would pin every theme to the old default angle, and Asylum is
+         designed flat, so migration leaves the tilt to the theme. A save that already knows about themeId came from this
          version, where a rotation really is a deliberate override. */
       if (typeof data.themeId === 'string') {
         s.themeId = data.themeId;
@@ -1973,8 +1970,8 @@ function decodeList(text) {
     commit();
   }
 
-  /* Step back to the previous task and un-tick it — the undo for a fumbled
-     advance, which on a live stream is the button you actually need. */
+  /* Step back to the previous task and un-tick it. The undo for a fumbled
+     advance, which on a live stream is the button you reach for. */
   function back() {
     var ids = state.tasks.map(function (t) { return t.id; });
     var at = state.current ? ids.indexOf(state.current) : state.tasks.length;
@@ -2121,9 +2118,8 @@ function decodeList(text) {
         + incoming.length + (incoming.length === 1 ? ' task.' : ' tasks.'), 'good');
     }
 
-    /* Replacing throws away whatever is there, so it asks twice — the same
-       two-step the Clear list button uses. Appending cannot lose anything, so
-       it does not. */
+    /* Replacing throws away whatever is there, so it asks twice, the same
+       two-step the Clear list button uses. Appending cannot lose anything. */
     var armed = 0;
     el.listReplace.addEventListener('click', function () {
       if (!state.tasks.length) { bring(true); return; }
@@ -2162,9 +2158,9 @@ function decodeList(text) {
         flashMsg('That is not a theme code.', 'bad');
         return;
       }
-      /* Ids collide easily — two people both start from "Classic Yellow" in
-         the builder. Keep the incoming label but give it a fresh id unless it
-         is genuinely replacing one of your own. */
+      /* Ids collide easily, since two people both start from "Classic Yellow"
+         in the builder. Keep the incoming label but give it a fresh id unless
+         it replaces one of your own. */
       if (isBuiltin(theme.id)) theme.id = theme.id + '-' + uid().slice(0, 4);
       var at = -1;
       state.themes.forEach(function (t, i) { if (t.id === theme.id) at = i; });
@@ -2387,7 +2383,7 @@ function decodeList(text) {
   /* 3. A URL parameter, for a hidden browser source used as a command channel:
    *    point one at ?cmd=advance and have a hotkey refresh it. Clumsy, but it
    *    needs no websocket and no extra software. It runs once on load and only
-   *    ever writes — it never renders anything.
+   *    ever writes, and never renders anything.
    */
   function runUrlCommand() {
     var cmd = qs.get('cmd');

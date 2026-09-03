@@ -2,9 +2,8 @@
  * Theme tokens
  *
  * A theme is plain data. Nothing here knows about a specific built-in, and the
- * built-ins below get no privileges a user's theme doesn't also have — that's
- * the whole point. If a look can't be expressed as a token, the token set is
- * wrong, not the theme.
+ * built-ins below get no privileges a user's theme doesn't also have. If a
+ * look can't be expressed as a token, the token set is too narrow.
  *
  * Derived values (soft ink, gradient partner, curl shade) are computed here in
  * JS rather than in CSS. color-mix() and relative color syntax would be tidier
@@ -105,15 +104,15 @@ var DEFAULTS = {
   checkTickScale: 1.18,  /* tick size relative to the box; >1 overhangs */
   checkJitter: true,
 
-  /* the item you are on right now — nothing renders until one is marked */
+  /* the item you are on right now; nothing renders until one is marked */
   current: 'bar',        /* none | bar | arrow | dot | highlight */
   currentColor: '',      /* '' → the accent colour */
   currentBold: true,
 
   /* behaviour */
-  /* Striking a task out and fading it are separate decisions — the original
-     Asylum skin wanted the strike but not the fade — so they are separate
-     tokens rather than one enum of every combination. */
+  /* Striking a task out and fading it are separate decisions. The original
+     Asylum skin wanted the strike without the fade, which one enum of every
+     combination could not express. */
   doneStrike: true,
   doneFade: 'dim',       /* none | dim | mute */
   doneDim: 0.55,
@@ -487,7 +486,7 @@ function encodeTheme(theme) {
 }
 
 /* Accepts a share code or raw JSON, so pasting either works. Returns null when
-   it isn't a theme at all — the caller says so rather than applying junk. */
+   it isn't a theme at all, so the caller can say so instead of applying junk. */
 function decodeTheme(text) {
   var raw = String(text == null ? '' : text).trim();
   if (!raw) return null;
@@ -505,7 +504,7 @@ function decodeTheme(text) {
   /* A parsed object of entirely unknown keys is someone's clipboard, not a
      theme; normalize() would happily turn it into the default yellow note.
      Retired keys count as known, so a code written against an older token set
-     is still recognisably a theme — migrate() handles it from there. */
+     is still recognisably a theme. migrate() handles it from there. */
   var known = Object.keys(data).filter(function (k) {
     return Object.prototype.hasOwnProperty.call(DEFAULTS, k) || RETIRED_KEYS[k];
   });
@@ -523,8 +522,8 @@ function decodeTheme(text) {
  * from the token's default (enum -> select, boolean -> checkbox, number ->
  * slider) with colours listed explicitly, because a colour and a label are
  * both strings. Adding a token to DEFAULTS and naming it in a group below is
- * all it takes to get a working control — there is no hand-written form to
- * fall out of sync.
+ * all it takes to get a working control. No hand-written form can fall out
+ * of sync.
  *
  * `basic` names the handful of tokens most people actually reach for; the
  * builder opens on those and keeps the rest behind a toggle.

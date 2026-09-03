@@ -146,8 +146,8 @@
   #note-wrap > .note { margin-left: auto; margin-right: auto; }
   /* An OBS dock pane is often narrower than the note. Without this the fixed
      width of the note sets the width of the whole page, and the toolbar lays
-     itself out against that phantom width — leaving its buttons rendered
-     outside the visible pane with no way to scroll to them. */
+     itself out against that phantom width, leaving its buttons rendered outside
+     the visible pane with no way to scroll to them. */
   body.dock #note-wrap { overflow-x: auto; }
 
   .note {
@@ -271,9 +271,9 @@
     filter: drop-shadow(-2px -2px 3px rgba(0,0,0,.3));
   }
   /* torn off: the sheet is bitten away along its bottom edge.
-     One mask layer, no compositing — the two-layer intersect version needs
+     One mask layer, no compositing. The two-layer intersect version needs
      -webkit-mask-composite and mask-composite to agree on semantics they do
-     not share, and gets you an invisible note when they disagree. A radial
+     not share, and gives you an invisible note when they disagree. A radial
      gradient that is opaque past its radius scallops the edge on its own. */
   .note[data-corner="torn"] {
     --torn-r: calc(var(--corner-size, 32px) * .28);
@@ -353,8 +353,8 @@
 
   /* ---------- The item you are on right now ----------
      Marks live in the padding beside the row rather than in the flow, so
-     turning one on never reflows the list — the text stays exactly where it
-     was, which matters when this is changing live on stream. */
+     turning one on never reflows the list. The text stays where it was, which
+     matters when this changes live on stream. */
   .task.current .text { font-weight: var(--current-weight, inherit); }
   .note[data-current="none"] .task.current .text { font-weight: inherit; }
 
@@ -419,8 +419,8 @@
 
   body.dock .checkbox { cursor: pointer; }
   /* Centred on the box and scaled with it, so a tick can deliberately overhang
-     a small box — the nudge matches where a tick drawn by hand actually lands,
-     high and slightly left of centre. */
+     a small box. The nudge puts it where a hand-drawn tick lands, high and a
+     little left of centre. */
   .checkbox svg {
     position: absolute;
     left: 50%; top: 50%;
@@ -464,8 +464,8 @@
   }
 
   /* ---------- How a finished task reads ----------
-     Struck out, faded, or both — independent, because a note can want the pen
-     stroke without the task receding into the paper. */
+     Struck out, faded, or both, kept independent because a note can want the
+     pen stroke without the task receding into the paper. */
   .note[data-done-strike="on"] .task.done .txt { background-size: 100% var(--strike-w, 2.5px); }
   .note[data-done-fade="dim"] .task.done { opacity: var(--done-dim, .55); }
   .note[data-done-fade="mute"] .task.done .text { color: var(--done-c, var(--ink-soft)); }
@@ -813,7 +813,7 @@
 
   /* Every rule below stays scoped to .framepick. The base `.framepick .fp`
      rule above zeroes the border, and an unscoped `.fp-tl::before` loses to it
-     on specificity — which renders the whole picker as an empty box. */
+     on specificity, which renders the whole picker as an empty box. */
 
   /* corners: an L of two arms, mirrored into each corner */
   .framepick .fp-tl, .framepick .fp-tr,
@@ -1024,9 +1024,8 @@
  * Theme tokens
  *
  * A theme is plain data. Nothing here knows about a specific built-in, and the
- * built-ins below get no privileges a user's theme doesn't also have — that's
- * the whole point. If a look can't be expressed as a token, the token set is
- * wrong, not the theme.
+ * built-ins below get no privileges a user's theme doesn't also have. If a
+ * look can't be expressed as a token, the token set is too narrow.
  *
  * Derived values (soft ink, gradient partner, curl shade) are computed here in
  * JS rather than in CSS. color-mix() and relative color syntax would be tidier
@@ -1127,15 +1126,15 @@ var DEFAULTS = {
   checkTickScale: 1.18,  /* tick size relative to the box; >1 overhangs */
   checkJitter: true,
 
-  /* the item you are on right now — nothing renders until one is marked */
+  /* the item you are on right now; nothing renders until one is marked */
   current: 'bar',        /* none | bar | arrow | dot | highlight */
   currentColor: '',      /* '' → the accent colour */
   currentBold: true,
 
   /* behaviour */
-  /* Striking a task out and fading it are separate decisions — the original
-     Asylum skin wanted the strike but not the fade — so they are separate
-     tokens rather than one enum of every combination. */
+  /* Striking a task out and fading it are separate decisions. The original
+     Asylum skin wanted the strike without the fade, which one enum of every
+     combination could not express. */
   doneStrike: true,
   doneFade: 'dim',       /* none | dim | mute */
   doneDim: 0.55,
@@ -1509,7 +1508,7 @@ function encodeTheme(theme) {
 }
 
 /* Accepts a share code or raw JSON, so pasting either works. Returns null when
-   it isn't a theme at all — the caller says so rather than applying junk. */
+   it isn't a theme at all, so the caller can say so instead of applying junk. */
 function decodeTheme(text) {
   var raw = String(text == null ? '' : text).trim();
   if (!raw) return null;
@@ -1527,7 +1526,7 @@ function decodeTheme(text) {
   /* A parsed object of entirely unknown keys is someone's clipboard, not a
      theme; normalize() would happily turn it into the default yellow note.
      Retired keys count as known, so a code written against an older token set
-     is still recognisably a theme — migrate() handles it from there. */
+     is still recognisably a theme. migrate() handles it from there. */
   var known = Object.keys(data).filter(function (k) {
     return Object.prototype.hasOwnProperty.call(DEFAULTS, k) || RETIRED_KEYS[k];
   });
@@ -1545,8 +1544,8 @@ function decodeTheme(text) {
  * from the token's default (enum -> select, boolean -> checkbox, number ->
  * slider) with colours listed explicitly, because a colour and a label are
  * both strings. Adding a token to DEFAULTS and naming it in a group below is
- * all it takes to get a working control — there is no hand-written form to
- * fall out of sync.
+ * all it takes to get a working control. No hand-written form can fall out
+ * of sync.
  *
  * `basic` names the handful of tokens most people actually reach for; the
  * builder opens on those and keeps the rest behind a toggle.
@@ -1637,7 +1636,7 @@ function stepFor(key) {
  * Built-in themes
  *
  * Each is a partial: only what differs from DEFAULTS. They are ordinary theme
- * data with no special status — the builder round-trips them, and a theme you
+ * data with no special status. The builder round-trips them, and a theme you
  * paste in sits alongside them as an equal.
  *
  * `swatch` is the toolbar dot only. It isn't a token; it's just the colour
@@ -1687,8 +1686,8 @@ var BUILTINS = [
   },
 
   /* Not a repaint like the others: this replaces the sticky-note silhouette
-     with an instrument-panel skin — no tilt, no curl, semi-transparent ground,
-     corner brackets instead of a frame, Barlow instead of the handwritten face.
+     with an instrument-panel skin: no tilt, no curl, translucent ground, corner
+     brackets instead of a frame, Barlow instead of the handwritten face.
      It is the reason the token set looks the way it does. Everything below is
      plain data; there is no Asylum-specific CSS anywhere. */
   {
@@ -1728,14 +1727,14 @@ var BUILTINS = [
 /* ---------------------------------------------------------------------------
  * Saving to and loading from a file
  *
- * Both of these need a click behind them — a page cannot write to a path of
- * its choosing, or read one, without the person saying so. That is also why
+ * Both need a click behind them. A page cannot write to a path of its
+ * choosing, or read one, without you saying so. That is also why
  * there is no "keep list.json next to the app and load it on startup": a
  * file:// page gets an opaque origin, so fetching a file sitting beside it is
  * a cross-origin request and is blocked. Verified, not assumed.
  *
  * So files are the good option for keeping a backup on disk, and pasted text
- * stays the one that always works — including inside a browser source, and
+ * stays the one that always works, including inside a browser source and
  * when sending a list to somebody else.
  * ------------------------------------------------------------------------- */
 
@@ -1874,7 +1873,7 @@ function openTextFile(accept, onText, onFail) {
     refreshCode();
     /* Widgets draw themselves in the colours they represent, so they have to
        follow a colour change made elsewhere in the panel. Only widgets are
-       repainted here — repainting ordinary inputs would fight with a slider
+       repainted here. Repainting ordinary inputs would fight with a slider
        mid-drag or a half-typed field. */
     widgetPaints.forEach(function (paint) { paint(); });
     try { localStorage.setItem(KEY, JSON.stringify(theme)); } catch (e) { /* private mode */ }
@@ -1896,7 +1895,7 @@ function openTextFile(accept, onText, onFail) {
    * Custom widgets
    *
    * Most controls are inferred from a token's default. A few tokens are
-   * better shown than listed — picking which corners carry an accent is a
+   * better shown than listed. Picking which corners carry an accent is a
    * spatial question, and eight checkboxes make you hold the picture in your
    * head. A widget registered here takes over rendering for its token, and
    * may drive more than one (the frame picker owns both the corner and the

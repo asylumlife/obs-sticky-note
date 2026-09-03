@@ -106,9 +106,8 @@
       /* Pre-token saves stored `theme: 'yellow' | 'custom'` with the two custom
          colours alongside, and always carried a concrete `rotation` even when
          the user had never touched the slider. Reading that back as an
-         override would pin every theme to the old default angle — Asylum, for
-         one, is designed flat — so on migration the tilt is deliberately left
-         to the theme. A save that already knows about themeId came from this
+         override would pin every theme to the old default angle, and Asylum is
+         designed flat, so migration leaves the tilt to the theme. A save that already knows about themeId came from this
          version, where a rotation really is a deliberate override. */
       if (typeof data.themeId === 'string') {
         s.themeId = data.themeId;
@@ -455,8 +454,8 @@
     commit();
   }
 
-  /* Step back to the previous task and un-tick it — the undo for a fumbled
-     advance, which on a live stream is the button you actually need. */
+  /* Step back to the previous task and un-tick it. The undo for a fumbled
+     advance, which on a live stream is the button you reach for. */
   function back() {
     var ids = state.tasks.map(function (t) { return t.id; });
     var at = state.current ? ids.indexOf(state.current) : state.tasks.length;
@@ -603,9 +602,8 @@
         + incoming.length + (incoming.length === 1 ? ' task.' : ' tasks.'), 'good');
     }
 
-    /* Replacing throws away whatever is there, so it asks twice — the same
-       two-step the Clear list button uses. Appending cannot lose anything, so
-       it does not. */
+    /* Replacing throws away whatever is there, so it asks twice, the same
+       two-step the Clear list button uses. Appending cannot lose anything. */
     var armed = 0;
     el.listReplace.addEventListener('click', function () {
       if (!state.tasks.length) { bring(true); return; }
@@ -644,9 +642,9 @@
         flashMsg('That is not a theme code.', 'bad');
         return;
       }
-      /* Ids collide easily — two people both start from "Classic Yellow" in
-         the builder. Keep the incoming label but give it a fresh id unless it
-         is genuinely replacing one of your own. */
+      /* Ids collide easily, since two people both start from "Classic Yellow"
+         in the builder. Keep the incoming label but give it a fresh id unless
+         it replaces one of your own. */
       if (isBuiltin(theme.id)) theme.id = theme.id + '-' + uid().slice(0, 4);
       var at = -1;
       state.themes.forEach(function (t, i) { if (t.id === theme.id) at = i; });
@@ -869,7 +867,7 @@
   /* 3. A URL parameter, for a hidden browser source used as a command channel:
    *    point one at ?cmd=advance and have a hotkey refresh it. Clumsy, but it
    *    needs no websocket and no extra software. It runs once on load and only
-   *    ever writes — it never renders anything.
+   *    ever writes, and never renders anything.
    */
   function runUrlCommand() {
     var cmd = qs.get('cmd');

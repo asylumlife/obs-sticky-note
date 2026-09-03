@@ -5,10 +5,10 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before filing: if the dock and overlay aren't syncing, check that the
-        browser source has **Local file unchecked** and uses the exact same
-        `file:///` URL as the dock. That's the cause the vast majority of the
-        time — see the Troubleshooting section of the README.
+        If the dock and overlay aren't syncing, first check that the browser
+        source has **Local file unchecked** and uses the same `file:///` URL as
+        the dock. That's the cause most of the time. See the Troubleshooting
+        section of the README.
 
   - type: textarea
     id: what
@@ -56,8 +56,8 @@ body:
     attributes:
       label: Theme code
       description: >
-        If it's specific to a theme, paste the code here — the dock's Theme
-        panel has a "Copy current" button. This makes it reproducible in one
+        If it's specific to a theme, paste the code here. The dock's Theme
+        panel has a "Copy current" button, which makes it reproducible in one
         step.
       render: text
 
