@@ -22,7 +22,8 @@ var ctx = vm.createContext({
   btoa: function (s) { return Buffer.from(s, 'binary').toString('base64'); },
   atob: function (s) { return Buffer.from(s, 'base64').toString('binary'); }
 });
-vm.runInContext(r('src/theme.js') + '\n' + r('src/themes.js'), ctx, { filename: 'theme.js' });
+vm.runInContext(r('src/theme.js') + '\n' + r('src/themes.js') + '\n' + r('src/list.js'),
+  ctx, { filename: 'theme.js' });
 
 var DEFAULTS = ctx.DEFAULTS, RANGES = ctx.RANGES, ENUMS = ctx.ENUMS;
 var SET_VALUES = ctx.SET_VALUES;
@@ -279,6 +280,66 @@ ok('ignores a prototype key', (function () {
   var t = decodeTheme('{"__proto__":{"x":1},"paper":"#123456"}');
   return t && t.paper === '#123456' && ({}).x === undefined;
 })());
+
+/* --- 8. getting a list in and out --- */
+var encodeList = ctx.encodeList, decodeList = ctx.decodeList;
+
+var sample = [
+  { text: 'Set up the scene', done: true },
+  { text: 'Answer chat questions', done: false }
+];
+var back = decodeList(encodeList("Today's Goals", sample));
+ok('list code round-trips the title', back && back.title === "Today's Goals");
+ok('list code round-trips the tasks', back && back.tasks.length === 2);
+ok('list code round-trips done marks',
+   back && back.tasks[0].done === true && back.tasks[1].done === false);
+ok('list code round-trips the text',
+   back && back.tasks[0].text === 'Set up the scene');
+
+/* Plain text is the point of the import side: people already wrote the list
+   somewhere, and it arrives carrying that place's punctuation. */
+var plain = decodeList('Set up the scene\nWelcome everyone\n\nAnswer chat');
+ok('plain lines become tasks', plain && plain.tasks.length === 3, plain && plain.tasks.length);
+ok('blank lines are skipped', plain && plain.tasks[2].text === 'Answer chat');
+ok('plain text carries no title', plain && plain.title === null);
+
+var bullets = decodeList('- one\n* two\n• three\n1. four\n2) five');
+ok('bullets and numbering are stripped', bullets && bullets.tasks.length === 5,
+   bullets && JSON.stringify(bullets.tasks.map(function (t) { return t.text; })));
+ok('bullet text survives intact', bullets && bullets.tasks[3].text === 'four');
+
+var md = decodeList('- [x] done one\n- [ ] not done\n[X] done two\n- [-] also done');
+ok('markdown checkboxes are read', md && md.tasks.length === 4);
+ok('ticked box means done', md && md.tasks[0].done === true && md.tasks[0].text === 'done one');
+ok('empty box means not done', md && md.tasks[1].done === false && md.tasks[1].text === 'not done');
+ok('bare checkbox works', md && md.tasks[2].done === true);
+
+ok('rejects an empty paste', decodeList('') === null);
+ok('rejects whitespace only', decodeList('   \n  \n ') === null);
+ok('rejects a broken code', decodeList('snl1:!!!!') === null);
+ok('rejects a theme code', decodeList(encodeTheme(BUILTINS[0])) === null);
+ok('rejects some other tool\'s code', decodeList('xyz9:QUJDREVG') === null);
+/* but a task that merely contains a colon is still a task */
+ok('keeps a task with a colon in it',
+   (function () {
+     var d = decodeList('Note: check the audio');
+     return d && d.tasks.length === 1 && d.tasks[0].text === 'Note: check the audio';
+   })());
+ok('keeps a single ordinary line', decodeList('Just one task').tasks.length === 1);
+ok('rejects JSON without tasks', decodeList('{"title":"x"}') === null);
+ok('accepts hand-written JSON',
+   (function () {
+     var d = decodeList('{"title":"T","tasks":[{"text":"a","done":true}]}');
+     return d && d.tasks.length === 1 && d.tasks[0].done === true;
+   })());
+
+var long = decodeList(new Array(400).join('x') + '\nsecond');
+ok('a huge line is truncated', long && long.tasks[0].text.length === 200, long && long.tasks[0].text.length);
+var many = [];
+for (var q = 0; q < 500; q++) many.push('task ' + q);
+ok('a huge list is capped', decodeList(many.join('\n')).tasks.length === 200);
+ok('newlines inside a task are collapsed',
+   decodeList('  spaced   out   task  ').tasks[0].text === 'spaced out task');
 
 /* --- report --- */
 if (fails.length) {

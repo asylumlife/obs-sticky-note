@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Saving and pasting in a list
+
+The README had to warn that clearing OBS's browser cache takes your tasks with
+it, and there was nothing you could do about that: themes could be copied out
+and pasted back, but the tasks — the part anyone would actually miss — could
+not.
+
+**Copy list** produces a code carrying the title, the tasks, and which are
+ticked. **Replace list** and **Add to list** take it back.
+
+They also take plain text, one task per line, because that is where checklists
+actually come from — a notes app, a Discord message, the description of the
+stream you are about to do. Bullets, numbering and markdown checkboxes are
+stripped, and a ticked box arrives already checked off. Pasting a code meant
+for something else is refused rather than becoming a task made of base64.
+
 ### The item you're on
 
 A task can be marked as the one you're working on now, picked out on the

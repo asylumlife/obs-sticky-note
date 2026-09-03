@@ -73,6 +73,37 @@ All editing happens in the dock:
 Check off the last item and the note wiggles, then an "All done!" stamp
 appears.
 
+## Saving and pasting in a list
+
+Click **List** in the dock toolbar.
+
+**Copy list** gives you a code holding your title, your tasks, and which are
+ticked. Keep it somewhere — a pinned Discord message, a text file, wherever.
+Your tasks live in OBS's browser storage, and clearing OBS's browser cache
+takes them with it, so this is the backup.
+
+**Replace list** and **Add to list** take that code back, and also take **plain
+text — one task per line**:
+
+```
+Set up the scene
+Welcome everyone
+Finish the character model
+```
+
+Bullets, numbering, and markdown checkboxes are understood, so a list you
+already wrote somewhere else pastes in as-is:
+
+```
+- [x] Set up the scene
+- [ ] Welcome everyone
+* Check audio levels
+1. Start the music
+```
+
+A ticked box arrives already checked off. Replacing asks twice before throwing
+away what you have; adding can't lose anything, so it doesn't.
+
 ## The item you're on
 
 Click **◉** on any task to mark it as the one you're working on now. Viewers

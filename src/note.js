@@ -19,6 +19,13 @@
     themeCopy: document.getElementById('theme-copy'),
     themeRemove: document.getElementById('theme-remove'),
     themeMsg: document.getElementById('theme-msg'),
+    listBtn: document.getElementById('list-btn'),
+    listPanel: document.getElementById('list-panel'),
+    listCode: document.getElementById('list-code'),
+    listCopy: document.getElementById('list-copy'),
+    listReplace: document.getElementById('list-replace'),
+    listAppend: document.getElementById('list-append'),
+    listMsg: document.getElementById('list-msg'),
     themeBuilder: document.getElementById('theme-builder'),
     builderUrl: document.getElementById('builder-url'),
     builderCopy: document.getElementById('builder-copy'),
@@ -500,15 +507,17 @@
     sel.addRange(r);
   }
 
-  function flashMsg(text, kind) {
-    el.themeMsg.textContent = text;
-    el.themeMsg.className = 'theme-msg' + (kind ? ' ' + kind : '');
+  function flash(node, text, kind) {
+    node.textContent = text;
+    node.className = 'theme-msg' + (kind ? ' ' + kind : '');
     if (kind === 'good') {
       setTimeout(function () {
-        if (el.themeMsg.textContent === text) el.themeMsg.textContent = '';
+        if (node.textContent === text) node.textContent = '';
       }, 2500);
     }
   }
+
+  function flashMsg(text, kind) { flash(el.themeMsg, text, kind); }
 
   /* The builder lives next to this file. Deliberately a copyable path rather
      than a link: a link clicked inside an OBS dock navigates the dock itself,
@@ -548,10 +557,85 @@
     el.themeBuilder.hidden = false;
   }
 
+  function setupListPanel() {
+    el.listBtn.addEventListener('click', function () {
+      el.listPanel.hidden = !el.listPanel.hidden;
+      if (!el.listPanel.hidden) {
+        el.themePanel.hidden = true;
+        el.listCode.focus();
+      }
+    });
+
+    el.listCopy.addEventListener('click', function () {
+      var code = encodeList(state.title, state.tasks);
+      el.listCode.value = code;
+      el.listCode.select();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(
+          function () { flash(el.listMsg, 'Copied. Keep it somewhere safe.', 'good'); },
+          function () { flash(el.listMsg, 'Select the box and copy.', null); }
+        );
+      } else {
+        flash(el.listMsg, 'Select the box and copy.', null);
+      }
+    });
+
+    function bring(replace) {
+      var parsed = decodeList(el.listCode.value);
+      if (!parsed) {
+        flash(el.listMsg, 'Nothing usable in there.', 'bad');
+        return;
+      }
+      var incoming = parsed.tasks.map(function (t) {
+        return { id: uid(), text: t.text, done: t.done };
+      });
+
+      if (replace) {
+        state.tasks = incoming;
+        state.current = null;
+        if (parsed.title) state.title = parsed.title;
+      } else {
+        state.tasks = state.tasks.concat(incoming);
+      }
+      el.listCode.value = '';
+      commit();
+      flash(el.listMsg, (replace ? 'Replaced with ' : 'Added ')
+        + incoming.length + (incoming.length === 1 ? ' task.' : ' tasks.'), 'good');
+    }
+
+    /* Replacing throws away whatever is there, so it asks twice — the same
+       two-step the Clear list button uses. Appending cannot lose anything, so
+       it does not. */
+    var armed = 0;
+    el.listReplace.addEventListener('click', function () {
+      if (!state.tasks.length) { bring(true); return; }
+      if (!armed) {
+        el.listReplace.textContent = 'Replace ' + state.tasks.length + '?';
+        el.listReplace.classList.add('armed');
+        armed = setTimeout(function () {
+          armed = 0;
+          el.listReplace.textContent = 'Replace list';
+          el.listReplace.classList.remove('armed');
+        }, 3000);
+        return;
+      }
+      clearTimeout(armed);
+      armed = 0;
+      el.listReplace.textContent = 'Replace list';
+      el.listReplace.classList.remove('armed');
+      bring(true);
+    });
+
+    el.listAppend.addEventListener('click', function () { bring(false); });
+  }
+
   function setupThemePanel() {
     el.themeBtn.addEventListener('click', function () {
       el.themePanel.hidden = !el.themePanel.hidden;
-      if (!el.themePanel.hidden) el.themeCode.focus();
+      if (!el.themePanel.hidden) {
+        el.listPanel.hidden = true;
+        el.themeCode.focus();
+      }
     });
 
     el.themeApply.addEventListener('click', function () {
@@ -611,6 +695,7 @@
     el.addRow.hidden = false;
 
     renderSwatches();
+    setupListPanel();
     setupThemePanel();
     setupBuilderLink();
 

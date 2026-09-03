@@ -2,6 +2,7 @@
     <div class="toolbar-row">
       <div class="swatches" id="swatches"></div>
       <div class="toolbar-actions">
+        <button id="list-btn" type="button">List</button>
         <button id="theme-btn" type="button">Theme</button>
         <button id="uncheck-all" type="button">Uncheck all</button>
         <button id="clear-list" type="button">Clear list</button>
@@ -23,6 +24,21 @@
         <input id="ink-color" type="color">
       </label>
     </div>
+    <div class="theme-panel" id="list-panel" hidden>
+      <div class="theme-panel-hint">
+        Copy your list somewhere safe, or paste one in. Plain text works —
+        one task per line, from anywhere you already wrote it.
+      </div>
+      <textarea id="list-code" spellcheck="false"
+                placeholder="snl1:...  &#10;&#10;or just:&#10;Set up the scene&#10;Welcome everyone"></textarea>
+      <div class="theme-panel-actions">
+        <button id="list-copy" type="button">Copy list</button>
+        <button id="list-replace" type="button">Replace list</button>
+        <button id="list-append" type="button">Add to list</button>
+        <span class="theme-msg" id="list-msg"></span>
+      </div>
+    </div>
+
     <div class="theme-panel" id="theme-panel" hidden>
       <div class="theme-panel-hint">
         Paste a code from the Theme Builder to add a theme, or copy this note's

@@ -107,6 +107,8 @@
     padding: 5px 7px;
   }
   .theme-panel textarea:focus { outline: none; border-color: #5a6068; }
+  /* the list box takes a pasted list, not a one-line code, so it opens taller */
+  #list-code { height: 86px; }
   .theme-panel-actions {
     display: flex;
     align-items: center;
@@ -613,6 +615,7 @@
     <div class="toolbar-row">
       <div class="swatches" id="swatches"></div>
       <div class="toolbar-actions">
+        <button id="list-btn" type="button">List</button>
         <button id="theme-btn" type="button">Theme</button>
         <button id="uncheck-all" type="button">Uncheck all</button>
         <button id="clear-list" type="button">Clear list</button>
@@ -634,6 +637,21 @@
         <input id="ink-color" type="color">
       </label>
     </div>
+    <div class="theme-panel" id="list-panel" hidden>
+      <div class="theme-panel-hint">
+        Copy your list somewhere safe, or paste one in. Plain text works —
+        one task per line, from anywhere you already wrote it.
+      </div>
+      <textarea id="list-code" spellcheck="false"
+                placeholder="snl1:...  &#10;&#10;or just:&#10;Set up the scene&#10;Welcome everyone"></textarea>
+      <div class="theme-panel-actions">
+        <button id="list-copy" type="button">Copy list</button>
+        <button id="list-replace" type="button">Replace list</button>
+        <button id="list-append" type="button">Add to list</button>
+        <span class="theme-msg" id="list-msg"></span>
+      </div>
+    </div>
+
     <div class="theme-panel" id="theme-panel" hidden>
       <div class="theme-panel-hint">
         Paste a code from the Theme Builder to add a theme, or copy this note's
@@ -1379,6 +1397,125 @@ var BUILTINS = [
   }
 ];
 
+/* ---------------------------------------------------------------------------
+ * Getting a list in and out
+ *
+ * The list lives in OBS's browser storage, which the README has to warn people
+ * is wiped along with OBS's browser cache. Themes could already be copied out
+ * and pasted back; the tasks — the thing anyone would actually miss — could
+ * not. This closes that.
+ *
+ * Export is a code, so a list round-trips exactly, done marks included.
+ * Import deliberately also takes plain text, because that is where checklists
+ * actually come from: a notes app, a Discord message, the description of the
+ * stream you are about to do. Making someone retype a list they already wrote
+ * would defeat the point.
+ * ------------------------------------------------------------------------- */
+
+var LIST_PREFIX = 'snl1:';
+var MAX_TASKS = 200;
+var MAX_TASK_LEN = 200;
+
+function listToB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function listFromB64(b64) {
+  return decodeURIComponent(escape(atob(b64)));
+}
+
+function encodeList(title, tasks) {
+  var payload = {
+    v: 1,
+    title: String(title == null ? '' : title).slice(0, 200),
+    tasks: (tasks || []).slice(0, MAX_TASKS).map(function (t) {
+      /* ids are local to one machine's storage and mean nothing to whoever
+         you send this to, so they are left out */
+      return t.done ? [t.text, 1] : [t.text];
+    })
+  };
+  return LIST_PREFIX + listToB64(JSON.stringify(payload));
+}
+
+function cleanText(s) {
+  return String(s).replace(/\s+/g, ' ').trim().slice(0, MAX_TASK_LEN);
+}
+
+/* One task per line. Strips the punctuation people's lists already carry —
+   bullets, numbering, markdown checkboxes — so pasting from somewhere else
+   just works, and reads a ticked markdown box as a finished task. */
+function parsePlainList(text) {
+  var out = [];
+  String(text).split(/\r?\n/).forEach(function (raw) {
+    var line = raw.trim();
+    if (!line) return;
+
+    /* bullet or numbering: "- ", "* ", "• ", "3. ", "3) " */
+    line = line.replace(/^[-*•–—]\s+/, '').replace(/^\d+[.)]\s+/, '');
+
+    /* markdown checkbox, which may follow a bullet */
+    var done = false;
+    var box = /^\[([ xX\-])\]\s*/.exec(line);
+    if (box) {
+      done = box[1] !== ' ';
+      line = line.slice(box[0].length);
+    }
+
+    var text2 = cleanText(line);
+    if (!text2) return;
+    if (out.length >= MAX_TASKS) return;
+    out.push({ text: text2, done: done });
+  });
+  return out;
+}
+
+/* Accepts a code, raw JSON, or a plain list. Returns { title, tasks } with
+   title null when the source did not carry one, or null if there is nothing
+   usable in there at all. */
+function decodeList(text) {
+  var raw = String(text == null ? '' : text).trim();
+  if (!raw) return null;
+
+  var json = null;
+  if (raw.slice(0, LIST_PREFIX.length) === LIST_PREFIX) {
+    try { json = listFromB64(raw.slice(LIST_PREFIX.length)); }
+    catch (e) { return null; }
+  } else if (raw.charAt(0) === '{') {
+    json = raw;
+  }
+
+  if (json !== null) {
+    var data;
+    try { data = JSON.parse(json); } catch (e) { return null; }
+    if (!data || typeof data !== 'object' || !Array.isArray(data.tasks)) return null;
+    var tasks = [];
+    data.tasks.slice(0, MAX_TASKS).forEach(function (t) {
+      /* the compact pair form, and the plain object form for hand-written JSON */
+      var text2 = Array.isArray(t) ? t[0] : (t && t.text);
+      var done = Array.isArray(t) ? !!t[1] : !!(t && t.done);
+      if (typeof text2 !== 'string') return;
+      text2 = cleanText(text2);
+      if (text2) tasks.push({ text: text2, done: done });
+    });
+    if (!tasks.length) return null;
+    return {
+      title: typeof data.title === 'string' && data.title.trim()
+        ? cleanText(data.title) : null,
+      tasks: tasks
+    };
+  }
+
+  /* A code for something else — a theme, most likely — would otherwise sail
+     through as a single plain-text task made of base64. Somebody is going to
+     paste into the wrong box, and turning their theme into a task named
+     "sn1:eyJ2Ijox..." is a worse answer than saying no. */
+  if (/^[a-z][a-z0-9]*:[A-Za-z0-9+/=]+$/.test(raw)) return null;
+
+  var plain = parsePlainList(raw);
+  if (!plain.length) return null;
+  return { title: null, tasks: plain };
+}
+
 (function () {
   'use strict';
 
@@ -1400,6 +1537,13 @@ var BUILTINS = [
     themeCopy: document.getElementById('theme-copy'),
     themeRemove: document.getElementById('theme-remove'),
     themeMsg: document.getElementById('theme-msg'),
+    listBtn: document.getElementById('list-btn'),
+    listPanel: document.getElementById('list-panel'),
+    listCode: document.getElementById('list-code'),
+    listCopy: document.getElementById('list-copy'),
+    listReplace: document.getElementById('list-replace'),
+    listAppend: document.getElementById('list-append'),
+    listMsg: document.getElementById('list-msg'),
     themeBuilder: document.getElementById('theme-builder'),
     builderUrl: document.getElementById('builder-url'),
     builderCopy: document.getElementById('builder-copy'),
@@ -1881,15 +2025,17 @@ var BUILTINS = [
     sel.addRange(r);
   }
 
-  function flashMsg(text, kind) {
-    el.themeMsg.textContent = text;
-    el.themeMsg.className = 'theme-msg' + (kind ? ' ' + kind : '');
+  function flash(node, text, kind) {
+    node.textContent = text;
+    node.className = 'theme-msg' + (kind ? ' ' + kind : '');
     if (kind === 'good') {
       setTimeout(function () {
-        if (el.themeMsg.textContent === text) el.themeMsg.textContent = '';
+        if (node.textContent === text) node.textContent = '';
       }, 2500);
     }
   }
+
+  function flashMsg(text, kind) { flash(el.themeMsg, text, kind); }
 
   /* The builder lives next to this file. Deliberately a copyable path rather
      than a link: a link clicked inside an OBS dock navigates the dock itself,
@@ -1929,10 +2075,85 @@ var BUILTINS = [
     el.themeBuilder.hidden = false;
   }
 
+  function setupListPanel() {
+    el.listBtn.addEventListener('click', function () {
+      el.listPanel.hidden = !el.listPanel.hidden;
+      if (!el.listPanel.hidden) {
+        el.themePanel.hidden = true;
+        el.listCode.focus();
+      }
+    });
+
+    el.listCopy.addEventListener('click', function () {
+      var code = encodeList(state.title, state.tasks);
+      el.listCode.value = code;
+      el.listCode.select();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(
+          function () { flash(el.listMsg, 'Copied. Keep it somewhere safe.', 'good'); },
+          function () { flash(el.listMsg, 'Select the box and copy.', null); }
+        );
+      } else {
+        flash(el.listMsg, 'Select the box and copy.', null);
+      }
+    });
+
+    function bring(replace) {
+      var parsed = decodeList(el.listCode.value);
+      if (!parsed) {
+        flash(el.listMsg, 'Nothing usable in there.', 'bad');
+        return;
+      }
+      var incoming = parsed.tasks.map(function (t) {
+        return { id: uid(), text: t.text, done: t.done };
+      });
+
+      if (replace) {
+        state.tasks = incoming;
+        state.current = null;
+        if (parsed.title) state.title = parsed.title;
+      } else {
+        state.tasks = state.tasks.concat(incoming);
+      }
+      el.listCode.value = '';
+      commit();
+      flash(el.listMsg, (replace ? 'Replaced with ' : 'Added ')
+        + incoming.length + (incoming.length === 1 ? ' task.' : ' tasks.'), 'good');
+    }
+
+    /* Replacing throws away whatever is there, so it asks twice — the same
+       two-step the Clear list button uses. Appending cannot lose anything, so
+       it does not. */
+    var armed = 0;
+    el.listReplace.addEventListener('click', function () {
+      if (!state.tasks.length) { bring(true); return; }
+      if (!armed) {
+        el.listReplace.textContent = 'Replace ' + state.tasks.length + '?';
+        el.listReplace.classList.add('armed');
+        armed = setTimeout(function () {
+          armed = 0;
+          el.listReplace.textContent = 'Replace list';
+          el.listReplace.classList.remove('armed');
+        }, 3000);
+        return;
+      }
+      clearTimeout(armed);
+      armed = 0;
+      el.listReplace.textContent = 'Replace list';
+      el.listReplace.classList.remove('armed');
+      bring(true);
+    });
+
+    el.listAppend.addEventListener('click', function () { bring(false); });
+  }
+
   function setupThemePanel() {
     el.themeBtn.addEventListener('click', function () {
       el.themePanel.hidden = !el.themePanel.hidden;
-      if (!el.themePanel.hidden) el.themeCode.focus();
+      if (!el.themePanel.hidden) {
+        el.listPanel.hidden = true;
+        el.themeCode.focus();
+      }
     });
 
     el.themeApply.addEventListener('click', function () {
@@ -1992,6 +2213,7 @@ var BUILTINS = [
     el.addRow.hidden = false;
 
     renderSwatches();
+    setupListPanel();
     setupThemePanel();
     setupBuilderLink();
 

@@ -94,6 +94,8 @@
     padding: 5px 7px;
   }
   .theme-panel textarea:focus { outline: none; border-color: #5a6068; }
+  /* the list box takes a pasted list, not a one-line code, so it opens taller */
+  #list-code { height: 86px; }
   .theme-panel-actions {
     display: flex;
     align-items: center;
