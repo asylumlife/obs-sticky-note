@@ -90,15 +90,36 @@ just 53 token values.
 
 ### Making your own
 
+Themes are designed in a separate page, `theme-builder.html`, and moved into
+OBS as a short code you paste. Two files, two steps.
+
+#### 1. Find the builder from the dock
+
+Click **Theme** in the dock toolbar. The panel that opens holds the paste box
+for theme codes, and at the bottom the path to the builder sitting next to your
+note:
+
+![The Theme panel in the OBS dock](docs/screenshots/theme-panel.png)
+
+Hit **Copy**, then paste that path into your normal browser's address bar.
+
+It is a path to copy rather than a link to click on purpose: a link clicked
+inside an OBS dock navigates the dock itself, which would replace your note
+with the builder and leave you hunting for the way back. It also has to be a
+separate browser — OBS keeps its own, with its own storage, so the builder
+cannot reach the note directly. That is why themes travel as a code.
+
+#### 2. Design the theme
+
 ![The theme builder](docs/screenshots/builder.png)
 
-Open **`theme-builder.html`** in your normal browser (not in OBS). Pick a
-starting point, adjust what you want, and watch the preview update. You can
-preview the note against a transparent, dark, bright, or busy background,
-because a note that reads beautifully on grey can vanish over actual video.
+Pick a starting point from **Start from…**, adjust what you want, and the
+preview updates as you go. The row along the top puts the note against a
+transparent, dark, bright, or busy background, because a note that reads
+beautifully on grey can vanish over actual video.
 
 **Basics** shows the dozen or so things most people want. **Everything** opens
-all 74 tokens.
+all 74 tokens, grouped by what they affect.
 
 Under **Shape** you'll find **Accents**: a small diagram of the note where you
 click any of the four corners or four edges to toggle a mark there. Corners get
@@ -106,13 +127,20 @@ L-shaped brackets, edges get a rule down that side, and the two carry separate
 colours and weights — so you can have brackets in one colour with a heavier
 rule down the left in another. This works on any theme, not just Asylum Life.
 
-When you're happy, click **Copy code**. Then in OBS, open the dock's **Theme**
-panel, paste, and click **Add theme**. It joins your swatches with a corner
-tick to mark it as yours, and the overlay picks it up like any other theme.
+Fields marked **Auto** work themselves out from another colour — the gradient
+from the paper, the checkbox from the ink. Untick one to set it yourself.
+
+#### 3. Move it into OBS
+
+Click **Copy code**, go back to the dock's **Theme** panel, paste into the box,
+and click **Add theme**. It joins your swatches with a corner tick marking it
+as yours, and the overlay picks it up like any other theme. **Remove** deletes
+a theme you added; the built-ins can't be removed.
 
 Theme codes are plain text starting `sn1:`, so you can paste one into a Discord
-message to share it. `docs/THEMES.md` has the full token reference if you'd
-rather hand-write JSON — the Theme panel accepts that too.
+message to share it. **Save .json** in the builder writes the same thing as a
+file. `docs/THEMES.md` has the full token reference if you'd rather hand-write
+JSON — the Theme panel accepts that too.
 
 ## URL parameters
 

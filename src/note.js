@@ -19,6 +19,10 @@
     themeCopy: document.getElementById('theme-copy'),
     themeRemove: document.getElementById('theme-remove'),
     themeMsg: document.getElementById('theme-msg'),
+    themeBuilder: document.getElementById('theme-builder'),
+    builderUrl: document.getElementById('builder-url'),
+    builderCopy: document.getElementById('builder-copy'),
+    builderHint: document.getElementById('builder-hint'),
     uncheckAll: document.getElementById('uncheck-all'),
     clearList: document.getElementById('clear-list'),
     sizeSlider: document.getElementById('size-slider'),
@@ -397,6 +401,16 @@
 
   /* ---------- Dock-only setup ---------- */
 
+  /* Clipboard access can be refused; falling back to a selection at least lets
+     someone hit Ctrl+C without retyping a file path by hand. */
+  function selectText(node) {
+    var r = document.createRange();
+    r.selectNodeContents(node);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+
   function flashMsg(text, kind) {
     el.themeMsg.textContent = text;
     el.themeMsg.className = 'theme-msg' + (kind ? ' ' + kind : '');
@@ -405,6 +419,44 @@
         if (el.themeMsg.textContent === text) el.themeMsg.textContent = '';
       }, 2500);
     }
+  }
+
+  /* The builder lives next to this file. Deliberately a copyable path rather
+     than a link: a link clicked inside an OBS dock navigates the dock itself,
+     which would replace your note with the builder and leave you hunting for
+     the way back. Paste it into a real browser instead. */
+  function builderPath() {
+    var base = location.href.split('#')[0].split('?')[0];
+    var cut = base.lastIndexOf('/');
+    if (cut === -1) return null;
+    return base.slice(0, cut + 1) + 'theme-builder.html';
+  }
+
+  function setupBuilderLink() {
+    var url = builderPath();
+    if (!url) return;
+
+    el.builderUrl.textContent = url;
+    el.builderHint.textContent = 'Open this in your normal browser to design a '
+      + 'theme, then paste the code it gives you into the box above. It has to '
+      + 'be a separate browser: OBS keeps its own, so the builder cannot reach '
+      + 'this note directly.';
+
+    el.builderCopy.addEventListener('click', function () {
+      var done = function () {
+        el.builderCopy.textContent = 'Copied!';
+        setTimeout(function () { el.builderCopy.textContent = 'Copy'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done, function () {
+          selectText(el.builderUrl);
+        });
+      } else {
+        selectText(el.builderUrl);
+      }
+    });
+
+    el.themeBuilder.hidden = false;
   }
 
   function setupThemePanel() {
@@ -471,6 +523,7 @@
 
     renderSwatches();
     setupThemePanel();
+    setupBuilderLink();
 
     el.sizeSlider.addEventListener('input', function () {
       state.size = el.sizeSlider.value / 100;
@@ -540,14 +593,6 @@
   }
 
   /* ---------- Setup-URLs panel ---------- */
-
-  function selectText(node) {
-    var r = document.createRange();
-    r.selectNodeContents(node);
-    var sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(r);
-  }
 
   function setupUrlPanel() {
     var inOBS = !!window.obsstudio;

@@ -20,6 +20,13 @@ lines of bespoke CSS overriding the silhouette, fonts, checkbox, and animation.
 - Size, Tilt, Paper, and Ink are now overrides layered on the current theme
   rather than a separate "custom" theme. Clicking a swatch clears them.
 
+### Getting to the builder from OBS
+
+The dock's **Theme** panel now shows the path to `theme-builder.html` sitting
+next to your note, with a Copy button. It is a path to copy rather than a link
+to click because a link clicked inside an OBS dock navigates the dock itself,
+replacing the note with the builder.
+
 ### New: theme builder
 
 `theme-builder.html`, a second self-contained file, opened in a normal browser.

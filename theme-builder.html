@@ -126,6 +126,8 @@
     cursor: pointer;
   }
   .theme-panel-actions button:hover { background: #3d4147; }
+  .theme-builder { margin-top: 10px; border-top: 1px solid #2f3439; padding-top: 8px; }
+  .theme-builder .url-label { color: #8d9299; }
   .theme-msg { font: 11px system-ui, sans-serif; color: #8d9299; }
   .theme-msg.bad { color: #e08585; }
   .theme-msg.good { color: #7fc08a; }
@@ -521,9 +523,9 @@
   }
   #setup .setup-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
   #setup .setup-hint { font-size: 11px; margin-top: 8px; line-height: 1.4; }
-  #setup .url-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-  #setup .url-label { font-size: 11px; flex: none; width: 48px; }
-  #setup .url-text {
+  .url-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .url-label { font-size: 11px; flex: none; width: 48px; }
+  .url-text {
     font: 11px ui-monospace, Menlo, monospace;
     padding: 5px 8px;
     border-radius: 5px;
@@ -534,7 +536,7 @@
        and drags the whole dock wider than the pane OBS gives it */
     min-width: 0;
   }
-  #setup .copy-btn {
+  .copy-btn {
     font: 11px system-ui, sans-serif;
     border-radius: 5px;
     padding: 4px 8px;
@@ -542,9 +544,9 @@
     flex: none;
   }
   body.dock #setup { margin: 4px 12px 20px; color: #8d9299; }
-  body.dock #setup .url-text { background: #2a2d31; border: 1px solid #3a3e44; color: #c8ccd2; }
-  body.dock #setup .copy-btn { background: #33373c; border: 1px solid #44484e; color: #cfd2d6; }
-  body.dock #setup .copy-btn:hover { background: #3d4147; }
+  body.dock .url-text { background: #2a2d31; border: 1px solid #3a3e44; color: #c8ccd2; }
+  body.dock .copy-btn { background: #33373c; border: 1px solid #44484e; color: #cfd2d6; }
+  body.dock .copy-btn:hover { background: #3d4147; }
   body.overlay #setup {
     max-width: 460px;
     margin: 0 auto 24px;
