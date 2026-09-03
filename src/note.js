@@ -58,6 +58,7 @@
       size: 1,
       themeId: 'yellow',
       themes: [],       /* themes pasted in from the builder */
+      current: null,    /* id of the task you are on right now */
       rotation: null,   /* null = use the theme's tilt */
       paper: null,
       ink: null
@@ -118,6 +119,7 @@
       }
       if (HEX_RE.test(data.paper || '')) s.paper = data.paper;
       if (HEX_RE.test(data.ink || '')) s.ink = data.ink;
+      if (typeof data.current === 'string') s.current = data.current;
 
       if (Array.isArray(data.tasks)) {
         s.tasks = data.tasks
@@ -129,6 +131,10 @@
               done: !!t.done
             };
           });
+      }
+      /* a pointer at a task that no longer exists would mark nothing forever */
+      if (s.current && !s.tasks.some(function (t) { return t.id === s.current; })) {
+        s.current = null;
       }
       return s;
     } catch (e) {
@@ -207,7 +213,8 @@
 
   function buildTask(t) {
     var li = document.createElement('li');
-    li.className = 'task' + (t.done ? ' done' : '');
+    li.className = 'task' + (t.done ? ' done' : '')
+      + (t.id === state.current ? ' current' : '');
     li.dataset.id = t.id;
 
     var box = document.createElement('button');
@@ -249,6 +256,7 @@
       var controls = document.createElement('span');
       controls.className = 'controls';
       [
+        ['◉', 'Mark as the one you are on', function () { setCurrent(li.dataset.id); }],
         ['▲', 'Move up',   function () { moveTask(li.dataset.id, -1); }],
         ['▼', 'Move down', function () { moveTask(li.dataset.id, 1); }],
         ['✕', 'Delete',    function () { removeTask(li.dataset.id); }]
@@ -281,6 +289,7 @@
         li = buildTask(t);
       } else {
         li.classList.toggle('done', t.done);
+        li.classList.toggle('current', t.id === state.current);
         var txt = li.querySelector('.txt');
         if (document.activeElement !== txt && txt.textContent !== t.text) {
           txt.textContent = t.text;
@@ -396,7 +405,87 @@
 
   function removeTask(id) {
     state.tasks = state.tasks.filter(function (t) { return t.id !== id; });
+    if (state.current === id) state.current = null;
     commit();
+  }
+
+  /* ---------- Commands ----------
+   * Everything that drives the list from outside goes through here, and every
+   * command is a verb about the list's current state rather than a reference
+   * to a particular task. That is deliberate: a button wired to "check off
+   * item three" is scrap the moment the list changes, whereas "advance" keeps
+   * working for every list you ever write. Bind a key or a Stream Deck button
+   * once and never touch it again.
+   */
+
+  function firstUnfinished() {
+    for (var i = 0; i < state.tasks.length; i++) {
+      if (!state.tasks[i].done) return state.tasks[i];
+    }
+    return null;
+  }
+
+  function setCurrent(id) {
+    state.current = (state.current === id) ? null : id;
+    commit();
+  }
+
+  /* Tick off whatever you are on and move to the next thing left. With nothing
+     marked yet it just marks where you are, so the first press never skips a
+     task by surprise. */
+  function advance() {
+    if (!state.tasks.length) return;
+    var cur = findTask(state.current);
+    if (!cur) {
+      var start = firstUnfinished();
+      state.current = start ? start.id : null;
+      commit();
+      return;
+    }
+    cur.done = true;
+    var next = firstUnfinished();
+    state.current = next ? next.id : null;
+    commit();
+  }
+
+  /* Step back to the previous task and un-tick it — the undo for a fumbled
+     advance, which on a live stream is the button you actually need. */
+  function back() {
+    var ids = state.tasks.map(function (t) { return t.id; });
+    var at = state.current ? ids.indexOf(state.current) : state.tasks.length;
+    for (var i = at - 1; i >= 0; i--) {
+      if (state.tasks[i].done) {
+        state.tasks[i].done = false;
+        state.current = state.tasks[i].id;
+        commit();
+        return;
+      }
+    }
+    if (state.tasks.length) {
+      state.current = state.tasks[0].id;
+      commit();
+    }
+  }
+
+  var COMMANDS = {
+    advance: advance,
+    back: back,
+    reset: function () {
+      state.tasks.forEach(function (t) { t.done = false; });
+      state.current = null;
+      commit();
+    },
+    clear_current: function () {
+      state.current = null;
+      commit();
+    }
+  };
+
+  function runCommand(name) {
+    var fn = COMMANDS[String(name || '').toLowerCase()];
+    if (!fn) return false;
+    fn();
+    return true;
   }
 
   /* ---------- Dock-only setup ---------- */
@@ -647,6 +736,62 @@
     panel.hidden = false;
   }
 
+  /* ---------- Ways to run a command ----------
+   * Three transports, one command set. The commands stay verbs so a binding
+   * made once survives every list you write afterwards.
+   */
+
+  /* 1. The keyboard, in the dock. Free, works today, no setup. */
+  function setupKeys() {
+    document.addEventListener('keydown', function (ev) {
+      if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      /* never while a task, the title, or the add box is being typed into */
+      var a = document.activeElement;
+      if (a && (a.isContentEditable || a.tagName === 'INPUT'
+                || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT')) return;
+
+      if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); runCommand('advance'); }
+      else if (ev.key === 'Backspace') { ev.preventDefault(); runCommand('back'); }
+    });
+  }
+
+  /* 2. OBS custom events, which is how anything outside OBS reaches this page.
+   *    obs-websocket's CallVendorRequest with vendorName "obs-browser" and
+   *    requestType "emit_event" dispatches a DOM event into browser sources,
+   *    so a Stream Deck, a Companion button or a script can drive the list
+   *    without knowing anything about what is on it.
+   *
+   *    Listened for in both the overlay and the dock: whichever receives it
+   *    writes to storage, and the other picks the change up on its next poll.
+   */
+  function setupObsEvents() {
+    ['sticky-note', 'obs-sticky-note'].forEach(function (name) {
+      window.addEventListener(name, function (ev) {
+        var d = ev && ev.detail;
+        var cmd = d && (typeof d === 'string' ? d : d.command || d.cmd);
+        runCommand(cmd);
+      });
+    });
+    /* one event per command too, so a sender that cannot attach a payload
+       still has something to aim at */
+    Object.keys(COMMANDS).forEach(function (cmd) {
+      window.addEventListener('sticky-note-' + cmd.replace(/_/g, '-'), function () {
+        runCommand(cmd);
+      });
+    });
+  }
+
+  /* 3. A URL parameter, for a hidden browser source used as a command channel:
+   *    point one at ?cmd=advance and have a hotkey refresh it. Clumsy, but it
+   *    needs no websocket and no extra software. It runs once on load and only
+   *    ever writes — it never renders anything.
+   */
+  function runUrlCommand() {
+    var cmd = qs.get('cmd');
+    if (!cmd || IS_DEMO) return false;
+    return runCommand(cmd);
+  }
+
   /* ---------- Sync (storage event + polling fallback) ---------- */
 
   function refreshFromStorage() {
@@ -666,7 +811,11 @@
     document.body.style.zoom = SCALE;
   }
 
-  if (IS_DOCK) setupDock();
+  if (IS_DOCK) {
+    setupDock();
+    setupKeys();
+  }
+  setupObsEvents();
   setupUrlPanel();
 
   if (!IS_DEMO) {
@@ -676,5 +825,6 @@
     setInterval(refreshFromStorage, 1000);
   }
 
+  runUrlCommand();
   render(true);
 })();

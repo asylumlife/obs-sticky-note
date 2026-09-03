@@ -73,6 +73,57 @@ All editing happens in the dock:
 Check off the last item and the note wiggles, then an "All done!" stamp
 appears.
 
+## The item you're on
+
+Click **◉** on any task to mark it as the one you're working on now. Viewers
+see it picked out — a bar, an arrow, a dot, or a highlight, whichever the theme
+uses — so the list says what's happening rather than just what's left.
+
+Once something is marked, **Space** or **Enter** in the dock ticks it off and
+moves to the next unfinished task. **Backspace** steps back and un-ticks, for
+when you get ahead of yourself on stream.
+
+### Driving it hands-free
+
+The commands are deliberately **verbs about the list, not references to
+particular tasks**: `advance`, `back`, `reset`, `clear_current`. A button wired
+to "check off item three" is scrap the moment you write a different list, but
+one wired to "advance" keeps working for every list you ever make. Bind it
+once.
+
+There are three ways in, in rough order of how much setup they need:
+
+**Keyboard, in the dock.** Nothing to configure — Space, Enter, Backspace, as
+above. Keys are ignored while you're typing in a task, the title, or the add
+box.
+
+**An OBS custom event.** Anything that can send obs-websocket a
+`CallVendorRequest` with vendor `obs-browser` and request type `emit_event`
+can drive the list:
+
+```json
+{ "vendorName": "obs-browser",
+  "requestType": "emit_event",
+  "requestData": { "event_name": "sticky-note",
+                   "event_data": { "command": "advance" } } }
+```
+
+There are per-command event names too — `sticky-note-advance`,
+`sticky-note-back`, `sticky-note-reset` — for senders that can't attach a
+payload. Both the dock and the overlay listen; whichever hears it writes the
+change and the other picks it up within a second.
+
+This is the cleanest route, but it needs something that can send a *raw vendor
+request*. Bitfocus Companion and scripting libraries can; whether a given
+Stream Deck plugin can varies, so check yours before counting on it.
+
+**A hidden command source**, if your setup can't send vendor requests. Add a
+second Browser source pointing at `sticky-note.html?cmd=advance`, sized 1×1 and
+hidden. It runs that one command on load and renders nothing. Bind a hotkey to
+refresh that source and your Stream Deck can trigger it by sending the
+keystroke. Clumsy — one source per command — but it needs no extra software,
+and it's still list-independent.
+
 ## Themes
 
 Eight are built in: Classic Yellow, Pink, Blue, Green, Lined Notepad, Kraft,

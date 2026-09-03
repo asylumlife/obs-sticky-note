@@ -105,6 +105,11 @@ var DEFAULTS = {
   checkTickScale: 1.18,  /* tick size relative to the box; >1 overhangs */
   checkJitter: true,
 
+  /* the item you are on right now — nothing renders until one is marked */
+  current: 'bar',        /* none | bar | arrow | dot | highlight */
+  currentColor: '',      /* '' → the accent colour */
+  currentBold: true,
+
   /* behaviour */
   /* Striking a task out and fading it are separate decisions — the original
      Asylum skin wanted the strike but not the fade — so they are separate
@@ -126,7 +131,7 @@ var DEFAULTS = {
 var ENUMS = {
   texture: 'texture', corner: 'corner', cornerAt: 'corner-at',
   pin: 'pin', font: 'font', titleFont: 'title-font', titleCase: 'title-case',
-  check: 'check', doneFade: 'done-fade', shadow: 'shadow'
+  check: 'check', doneFade: 'done-fade', shadow: 'shadow', current: 'current'
 };
 
 var ENUM_VALUES = {
@@ -138,6 +143,7 @@ var ENUM_VALUES = {
   titleFont: ['inherit', 'hand', 'sans', 'condensed', 'system', 'serif', 'mono', 'marker'],
   titleCase: ['none', 'upper'],
   check: ['square', 'sharp', 'circle', 'none'],
+  current: ['none', 'bar', 'arrow', 'dot', 'highlight'],
   doneFade: ['none', 'dim', 'mute'],
   shadow: ['none', 'soft', 'hard', 'lift']
 };
@@ -290,6 +296,7 @@ function resolve(t) {
     checkColor: t.checkColor || t.ink,
     checkFillDone: t.checkFillDone || 'transparent',
     checkTick: t.checkTick || t.checkColor || t.ink,
+    currentColor: t.currentColor || t.accent,
     /* 'mute' reuses doneDim as a text alpha rather than an element opacity,
        so a finished task can recede without dimming its checkbox too */
     doneColor: rgba(t.ink, t.doneDim),
@@ -433,6 +440,9 @@ function applyTheme(note, theme) {
     '--check-tick-w': t.checkTickWidth,
     '--check-tick-scale': t.checkTickScale,
 
+    '--current-c': c.currentColor,
+    '--current-weight': t.currentBold ? '700' : 'inherit',
+
     '--done-dim': t.doneDim,
     '--done-c': c.doneColor,
     '--strike-w': t.strikeWidth + 'px'
@@ -524,7 +534,8 @@ var COLOR_KEYS = {
   paper: 1, paper2: 1, curl: 1, ink: 1, accent: 1,
   textureColor: 1, textureColor2: 1, borderColor: 1, pinColor: 1,
   frameColor: 1, frameEdgeColor: 1,
-  titleColor: 1, progressColor: 1, checkColor: 1, checkFillDone: 1, checkTick: 1
+  titleColor: 1, progressColor: 1, checkColor: 1, checkFillDone: 1, checkTick: 1,
+  currentColor: 1
 };
 
 var FIELD_GROUPS = [
@@ -569,6 +580,8 @@ var FIELD_GROUPS = [
     ['checkFillDone', 'Fill when done'], ['checkTick', 'Tick colour'],
     ['checkTickWidth', 'Tick weight'], ['checkTickScale', 'Tick size'],
     ['checkJitter', 'Hand-drawn tilt'],
+    ['current', 'Current item'], ['currentColor', 'Current colour'],
+    ['currentBold', 'Bold the current item'],
     ['doneStrike', 'Strike out when done'], ['doneFade', 'Fade when done'],
     ['doneDim', 'Fade amount'],
     ['strikeWidth', 'Strike weight']
@@ -586,7 +599,7 @@ var BASIC_FIELDS = {
   paper: 1, ink: 1, accent: 1, font: 1, texture: 1,
   tilt: 1, width: 1, corner: 1, cornerAt: 1, shadow: 1,
   titleSize: 1, taskSize: 1, check: 1, doneStrike: 1, doneFade: 1, pin: 1,
-  frameCorners: 1, frameEdges: 1, frameColor: 1
+  frameCorners: 1, frameEdges: 1, frameColor: 1, current: 1
 };
 
 /* Step size for a slider: fractional tokens need fine steps, pixel ones don't. */

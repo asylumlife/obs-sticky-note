@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+### The item you're on
+
+A task can be marked as the one you're working on now, picked out on the
+overlay as a bar, arrow, dot, or highlight — themeable like everything else,
+and off until you actually mark something.
+
+It exists mostly to make one button useful. The commands that drive the list
+are verbs about its current state — `advance`, `back`, `reset`,
+`clear_current` — never references to a particular task, because a button
+bound to "check off item three" is scrap as soon as the list changes while
+"advance" works for every list you will ever write.
+
+Three ways to send one:
+
+- **Keyboard in the dock**: Space or Enter advances, Backspace steps back.
+  Ignored while you are typing.
+- **OBS custom events**: obs-websocket `CallVendorRequest` with vendor
+  `obs-browser` and request `emit_event`, event name `sticky-note` and
+  `{"command": "advance"}`. Per-command event names exist too for senders that
+  cannot attach a payload.
+- **A hidden command source**: a Browser source at `?cmd=advance`, refreshed by
+  an OBS hotkey. Needs no extra software.
+
 ## 0.2.0 — 2026-09-02
 
 ### Themes are data now

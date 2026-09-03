@@ -102,6 +102,9 @@ browser, design what you want, and copy the code it gives you.
 | `checkTickWidth` | `3.2` | 0.5 to 8 |  |
 | `checkTickScale` | `1.18` | tick size relative to the box; >1 overhangs |  |
 | `checkJitter` | `true` | true \| false |  |
+| `current` | `"bar"` | none \| bar \| arrow \| dot \| highlight | yes |
+| `currentColor` | _derived_ | '' → the accent colour |  |
+| `currentBold` | `true` | true \| false |  |
 | `doneStrike` | `true` | true \| false | yes |
 | `doneFade` | `"dim"` | none \| dim \| mute | yes |
 | `doneDim` | `0.55` | 0.1 to 1 |  |

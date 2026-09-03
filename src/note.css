@@ -326,11 +326,57 @@
   /* ---------- Tasks ---------- */
   #tasks { list-style: none; position: relative; }
   .task {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 10px;
     padding: 3px 0;
     transition: opacity .4s ease;
+  }
+
+  /* ---------- The item you are on right now ----------
+     Marks live in the padding beside the row rather than in the flow, so
+     turning one on never reflows the list — the text stays exactly where it
+     was, which matters when this is changing live on stream. */
+  .task.current .text { font-weight: var(--current-weight, inherit); }
+  .note[data-current="none"] .task.current .text { font-weight: inherit; }
+
+  .note[data-current="bar"] .task.current::before,
+  .note[data-current="arrow"] .task.current::before,
+  .note[data-current="dot"] .task.current::before {
+    content: "";
+    position: absolute;
+    left: -11px;
+    color: var(--current-c);
+    pointer-events: none;
+  }
+  .note[data-current="bar"] .task.current::before {
+    top: 4px; bottom: 4px;
+    width: 3px;
+    background: var(--current-c);
+    border-radius: 2px;
+  }
+  .note[data-current="dot"] .task.current::before {
+    top: calc(var(--task-line, 32px) * .38);
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--current-c);
+  }
+  .note[data-current="arrow"] .task.current::before {
+    content: "\25B8";
+    left: -14px;
+    top: calc(var(--task-line, 32px) * .04);
+    font: 700 calc(var(--task-size, 26px) * .85)/1 system-ui, sans-serif;
+  }
+  /* a wash behind the row; sits under the text rather than over it */
+  .note[data-current="highlight"] .task.current::before {
+    content: "";
+    position: absolute;
+    left: -8px; right: -8px; top: 1px; bottom: 1px;
+    background: var(--current-c);
+    opacity: .16;
+    border-radius: 4px;
+    pointer-events: none;
   }
 
   .checkbox {
