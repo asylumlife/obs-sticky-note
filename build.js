@@ -50,7 +50,7 @@ var TARGETS = [
       /* theme.js and themes.js first: note.js closes over them */
       '/*@js*/': function () {
         return [read('src/theme.js'), read('src/themes.js'), read('src/list.js'),
-                read('src/files.js'), read('src/note.js')]
+                read('src/note.js')]
           .map(function (s) { return s.replace(/\s+$/, ''); })
           .join('\n\n');
       }

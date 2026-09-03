@@ -77,27 +77,15 @@ appears.
 
 Click **List** in the dock toolbar.
 
-**Save .json** writes your list to a file — one per stream if you like. It's
-plain readable JSON, so you can edit it in any text editor:
+**Copy list** gives you a code holding your title, your tasks, and which are
+ticked. Keep it wherever you like — a pinned Discord message, a text file, a
+note on your phone. Your tasks live in OBS's browser storage, and clearing
+OBS's browser cache takes them with it, so this is the backup.
 
-```json
-{ "v": 1, "title": "Stream Prep",
-  "tasks": [ { "text": "Set up the scene", "done": true } ] }
-```
-
-**Open .json** reads one back into the box, ready to Replace or Add.
-
-**Copy list** gives you the same thing as a code you can paste into a Discord
-message. Use it if your OBS build doesn't open file dialogs — some don't — or
-to send a list to someone else.
-
-Either way, this is the backup: your tasks live in OBS's browser storage, and
-clearing OBS's browser cache takes them with it.
-
-> **Why not just keep a `list.json` next to the app and load it automatically?**
-> Because it can't work. A page opened from `file://` gets an opaque origin, so
-> reading a file sitting beside it counts as cross-origin and the browser
-> blocks it. Loading a file has to start from a click.
+It's a paste rather than a Save-to-file button on purpose. The dock runs inside
+OBS's own browser, and whether that opens a file dialog isn't something this
+can rely on — a button that silently does nothing is worse than no button.
+Text works in the dock, in a browser source, and in a message to someone else.
 
 **Replace list** and **Add to list** take that code back, and also take **plain
 text — one task per line**:

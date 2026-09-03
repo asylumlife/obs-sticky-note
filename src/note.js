@@ -23,8 +23,6 @@
     listPanel: document.getElementById('list-panel'),
     listCode: document.getElementById('list-code'),
     listCopy: document.getElementById('list-copy'),
-    listSave: document.getElementById('list-save'),
-    listOpen: document.getElementById('list-open'),
     listReplace: document.getElementById('list-replace'),
     listAppend: document.getElementById('list-append'),
     listMsg: document.getElementById('list-msg'),
@@ -629,32 +627,6 @@
     });
 
     el.listAppend.addEventListener('click', function () { bring(false); });
-
-    /* A file on disk is the better backup — it survives a cleared clipboard
-       and you can keep one per stream. Whether the dialog actually opens is
-       down to the browser OBS ships, which is why the paste box stays. */
-    el.listSave.addEventListener('click', function () {
-      var name = (state.title || 'sticky-note')
-        .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
-      saveTextFile((name || 'sticky-note') + '.json',
-        JSON.stringify({ v: 1, title: state.title, tasks: state.tasks.map(function (t) {
-          return { text: t.text, done: t.done };
-        }) }, null, 2));
-      flash(el.listMsg, 'Saved. If no file appeared, use Copy list instead.', 'good');
-    });
-
-    el.listOpen.addEventListener('click', function () {
-      openTextFile('.json,application/json,text/plain', function (text, filename) {
-        if (!decodeList(text)) {
-          flash(el.listMsg, 'No list found in ' + filename + '.', 'bad');
-          return;
-        }
-        /* into the box rather than straight onto the note, so Replace still
-           asks before it throws your tasks away */
-        el.listCode.value = text;
-        flash(el.listMsg, 'Loaded ' + filename + '. Now Replace or Add.', 'good');
-      }, function (msg) { flash(el.listMsg, msg, 'bad'); });
-    });
   }
 
   function setupThemePanel() {

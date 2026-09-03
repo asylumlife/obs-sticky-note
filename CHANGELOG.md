@@ -9,18 +9,18 @@ it, and there was nothing you could do about that: themes could be copied out
 and pasted back, but the tasks — the part anyone would actually miss — could
 not.
 
-**Save .json** writes the list to a readable, hand-editable file and **Open
-.json** reads one back. **Copy list** produces the same thing as a code, for
-pasting into a chat window or for OBS builds that do not open file dialogs.
-**Replace list** and **Add to list** take either back.
+**Copy list** produces a code carrying the title, the tasks, and which are
+ticked. **Replace list** and **Add to list** take it back.
 
-Loading a `list.json` sitting beside the app automatically is not possible, and
-that is not a decision: a `file://` page has an opaque origin, so fetching a
-sibling file is cross-origin and blocked. Opening a file has to begin with a
-click.
+A pasted code rather than a file, because the dock runs inside OBS's own
+browser and whether that opens a file dialog is not something this can rely
+on. A button that silently does nothing is worse than no button, and text
+works everywhere the note does — including in a browser source, and in a
+message to somebody else.
 
-The theme builder gained the matching **Open .json** it had been missing — it
-could already save one.
+The theme builder does read and write `.json` files: it runs in an ordinary
+browser, where that is dependable. It gained the **Open .json** it had been
+missing, having been able to save one since it was written.
 
 They also take plain text, one task per line, because that is where checklists
 actually come from — a notes app, a Discord message, the description of the
